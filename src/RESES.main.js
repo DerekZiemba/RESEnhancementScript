@@ -126,7 +126,7 @@ RESES.extendType(RESES, {
 			update: function (counters) {
 				elGoodposts.textContent = counters.good;
 				elFilteredposts.textContent = counters.filtered;
-				elShitposts.textContent =  counters.shit;
+				elShitposts.textContent =	counters.shit;
 			}
 		};
 	})(window, window.document, window.RESES),
@@ -487,7 +487,7 @@ RESES.extendType(RESES, {
 					this.bisAnnoying |= filterData.annoyingflairs.includes(this.flairLabelText);
 				}
 
-				if (this.bIsRepost) { this.post.classList.add('isrepost');  }
+				if (this.bIsRepost) { this.post.classList.add('isrepost');	}
 				if (this.bIsBlockedURL) { this.post.classList.add('isblockedurl'); }
 				if (this.bIsPorn) { this.post.classList.add('isporn'); }
 				if (this.bIsAnime) { this.post.classList.add('isanime'); }

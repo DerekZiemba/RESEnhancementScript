@@ -25,7 +25,7 @@
 			.sidebar:hover {	z-index:50;	}
 
 		#sbRight.sidebar {	right:0;	}
-		#sbRight.sb-on.sidebar .sb-handle { margin-left:-5px; 	order: 0;	}
+		#sbRight.sb-on.sidebar .sb-handle { margin-left:-5px;	 order: 0;	}
 
 		#sbLeft.sidebar {	left:0;	}
 		#sbLeft.sidebar .sb-handle {	position: relative;	order: 1;	}
@@ -54,7 +54,7 @@
 		}
 
 		.tabmenu{ display: block; }
-		.thumbnail.self, .thumbnail.default, .thumbnail.spoiler  { display:none !important; }
+		.thumbnail.self, .thumbnail.default, .thumbnail.spoiler	{ display:none !important; }
 		.thing {
 			padding: 5px 0 5px 0;
 			margin: 7px 0 7px 0;
@@ -110,7 +110,7 @@
 		}
 
 		.content{
-			background-color: hsl(0,0%,10%)  !important;
+			background-color: hsl(0,0%,10%)	!important;
 		}
 		.thing {
 			background: hsl(0,0%,14%) !important;
@@ -131,10 +131,10 @@
 		.child>.sitetable> .comment.RES-keyNav-activeThing,
 		.child>.sitetable>.comment > .child>.sitetable> .comment.RES-keyNav-activeThing,
 		.child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable > .comment.RES-keyNav-activeThing {
-			background-color: hsl(0,5%,15%)  !important;
+			background-color: hsl(0,5%,15%)	!important;
 		}
 		.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container,	.thing.link.RES-keyNav-activeThing {
-			background-color: hsl(0,4%, 11%)  !important;
+			background-color: hsl(0,4%, 11%)	!important;
 		}
 		.res-nightmode .RES-keyNav-activeElement > .tagline,
 		.res-nightmode .RES-keyNav-activeElement .md-container > .md,
