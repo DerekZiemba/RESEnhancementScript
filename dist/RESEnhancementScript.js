@@ -2,161 +2,144 @@
 (function RESUS_styler(window, document) {
     const styleEl = document.createElement("style");
     styleEl.innerHTML = `
-    .side, .listing-chooser .contents { display:none;};
-    .sb-track .side, .listing-chooser .sidebar .contents{display: block;}
-    .sb-on .sb-track .sb-sled {
-      /* width:min-content; */
-      display: block;}
+		.side, .listing-chooser .contents { display:none;};
+		.sb-track .side, .listing-chooser .sidebar .contents{display: block;}
+		.sb-on .sb-track .sb-sled {
+			/* width:min-content; */
+			display: block;}
 
-    .listing-chooser .grippy {display: none;}
+		.listing-chooser .grippy {display: none;}
 
-    .sb-off.sidebar {  width: 6px;  }
-    .sidebar {
-      background-color: rgb(30, 30, 30);
-      position: absolute;
-      height:100%;
-      display: none;
-    }
-    .sidebar.sb-init {
-      display: flex;
-    }
-      .sidebar:hover {  z-index:50;  }
+		.sb-off.sidebar {	width: 6px;	}
+		.sidebar {
+			background-color: rgb(30, 30, 30);
+			position: absolute;
+			height:100%;
+			display: none;
+		}
+		.sidebar.sb-init {
+			display: flex;
+		}
+			.sidebar:hover {	z-index:50;	}
 
-    #sbRight.sidebar {  right:0;  }
-    #sbRight.sb-on.sidebar .sb-handle { margin-left:-5px;   order: 0;  }
+		#sbRight.sidebar {	right:0;	}
+		#sbRight.sb-on.sidebar .sb-handle { margin-left:-5px;	 order: 0;	}
 
-    #sbLeft.sidebar {  left:0;  }
-    #sbLeft.sidebar .sb-handle {  position: relative;  order: 1;  }
+		#sbLeft.sidebar {	left:0;	}
+		#sbLeft.sidebar .sb-handle {	position: relative;	order: 1;	}
 
-      .sb-off.sidebar .sb-track {  display: none;  }
-      .sidebar .sb-track {  margin-top: 20px;  }
-      .sidebar .sb-track .sb-sled {  padding: 3px;  margin:0;  }
-      .sidebar .sb-handle:hover {  background-color: rgb(92, 82, 82);  cursor: pointer;  }
-      .sidebar .sb-handle {
-        position: fixed;
-        min-height: 100%;
-        width:5px;
-        background-color: rgb(63, 58, 58);
-      }
-
-
-    html body.with-listing-chooser .listing-chooser {  position: static; display: none; padding-right:unset;  }
-    html body.with-listing-chooser.sidebarman .listing-chooser {  display: block;  }
-
-    html body .content { margin-left: 0px}
-    html body.with-listing-chooser>.content,
-    html body.with-listing-chooser.listing-chooser-collapsed>.content,
-    html body.with-listing-chooser .footer-parent {
-      margin-left: 0;
-      /* padding-left:8px; */
-    }
-
-    .tabmenu{ display: block; }
-    .thumbnail.self, .thumbnail.default, .thumbnail.spoiler  { display:none !important; }
-    .thing {
-      padding: 5px 0 5px 0;
-      margin: 7px 0 7px 0;
-    }
-    .comment .child, .comment .showreplies {
-      margin-left: 9px !important;
-      margin-top: 3px !important;
-    }
-    .res-commentBoxes .comment {
-      margin-left: 3px !important;
-    }
-    #allOptionsContainer {
-      max-width: 1000%;
-    }
-
-      body.goodpost #siteTable .thing.zregistered { display: block !important; }
-      body.goodpost #siteTable .thing.zregistered.RESFiltered,
-      body.goodpost #siteTable .thing.zregistered.ZFiltered,
-      body.goodpost #siteTable .thing.zregistered.isrepost,
-      body.goodpost #siteTable .thing.zregistered.iskarmawhore {  display: none !important; }
-
-      body.filteredpost #siteTable .thing.zregistered,
-      body.filteredpost #siteTable .thing.zregistered.RESFiltered.isrepost,
-      body.filteredpost #siteTable .thing.zregistered.RESFiltered.iskarmawhore,
-      body.filteredpost #siteTable .thing.zregistered.ZFiltered.isrepost,
-      body.filteredpost #siteTable .thing.zregistered.ZFiltered.iskarmawhore { display: none !important; }
-
-      body.filteredpost #siteTable .thing.zregistered.RESFiltered,
-      body.filteredpost #siteTable .thing.zregistered.ZFiltered { display: block !important; }
-
-      body.shitpost #siteTable .thing.zregistered,
-      body.shitpost #siteTable .thing.zregistered.RESFiltered,
-      body.shitpost #siteTable .thing.zregistered.ZFiltered { display: none !important; }
+			.sb-off.sidebar .sb-track {	display: none;	}
+			.sidebar .sb-track {	margin-top: 20px;	}
+			.sidebar .sb-track .sb-sled {	padding: 3px;	margin:0;	}
+			.sidebar .sb-handle:hover {	background-color: rgb(92, 82, 82);	cursor: pointer;	}
+			.sidebar .sb-handle {
+				position: fixed;
+				min-height: 100%;
+				width:5px;
+				background-color: rgb(63, 58, 58);
+			}
 
 
-      body.shitpost #siteTable .thing.zregistered.isrepost,  body.shitpost #siteTable .thing.zregistered.iskarmawhore {  display: block !important; }
+		html body.with-listing-chooser .listing-chooser {	position: static; display: none; padding-right:unset;	}
+		html body.with-listing-chooser.sidebarman .listing-chooser {	display: block;	}
+
+		html body .content { margin-left: 0px}
+		html body.with-listing-chooser>.content,
+		html body.with-listing-chooser.listing-chooser-collapsed>.content,
+		html body.with-listing-chooser .footer-parent {
+			margin-left: 0;
+			/* padding-left:8px; */
+		}
+
+		.tabmenu{ display: block; }
+		.thumbnail.self, .thumbnail.default, .thumbnail.spoiler	{ display:none !important; }
+		.thing {
+			padding: 5px 0 5px 0;
+			margin: 7px 0 7px 0;
+		}
+		.comment .child, .comment .showreplies {
+			margin-left: 9px !important;
+			margin-top: 3px !important;
+		}
+		.res-commentBoxes .comment {
+			margin-left: 3px !important;
+		}
+		#allOptionsContainer {
+			max-width: 1000%;
+		}
+
+			body.goodpost #siteTable .thing.zregistered { display: block !important; }
+			body.goodpost #siteTable .thing.zregistered.RESFiltered,
+			body.goodpost #siteTable .thing.zregistered.autodownvoted {	display: none !important; }
+
+			body.filteredpost #siteTable .thing.zregistered.RESFiltered { display: block !important; }
+			body.filteredpost #siteTable .thing.zregistered,
+			body.filteredpost #siteTable .thing.zregistered.autodownvoted { display: none !important; }
+
+			body.shitpost #siteTable .thing.zregistered.autodownvoted {	display: block !important; }
+			body.shitpost #siteTable .thing.zregistered,
+			body.shitpost #siteTable .thing.zregistered.RESFiltered:not(.autodownvoted) { display: none !important; }
 
 
-    body.goodpost #filtermode .goodpost {  color: lightgreen;  }
-    body.shitpost #filtermode .shitpost, body.filteredpost #filtermode .filteredpost {  color: tomato;  }
-
-    body.anti-resfilter .thing:not(.RESFiltered), body.anti-resfilter .thing:not(.ZFiltered) {
-      display: none;
-    }
-    body.anti-resfilter #siteTable .thing.RESFiltered, body.anti-resfilter #siteTable .thing.ZFiltered {
-      display: block !important;
-    }
+		body.goodpost #filtermode .goodpost {	color: lightgreen;	}
+		body.shitpost #filtermode .shitpost, body.filteredpost #filtermode .filteredpost {	color: tomato;	}
 
 
-    .res-commentBoxes .thing.comment {
-      padding: 3px 5px 3px 3px !important;
-      margin: 0px 4px 4px 5px !important;
-    }
+		.res-commentBoxes .thing.comment {
+			padding: 3px 5px 3px 3px !important;
+			margin: 0px 4px 4px 5px !important;
+		}
 
-    .content{
-      background-color: hsl(0,0%,10%)  !important;
-    }
-    .thing {
-      background: hsl(0,0%,14%) !important;
-    }
-    .subreddit, .author {
-      color: rgba(20, 150, 220, 0.8) !important;
-    }
-    .domain a {
-      color: rgb(173, 216, 230) !important;
-    }
-    .live-timestamp {
-      color: #898963 !important
-    }
-    .tagline {
-      color: #hsl(0, 0%, 53%) !important;
-    }
-    .RES-keyNav-activeElement,  .RES-keyNav-activeElement .md-container, .res-nightmode.res-commentBoxes .comment.RES-keyNav-activeThing,
-    .child>.sitetable> .comment.RES-keyNav-activeThing,
-    .child>.sitetable>.comment > .child>.sitetable> .comment.RES-keyNav-activeThing,
-    .child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable > .comment.RES-keyNav-activeThing {
-      background-color: hsl(0,5%,15%)  !important;
-    }
-    .RES-keyNav-activeElement,  .RES-keyNav-activeElement .md-container,  .thing.link.RES-keyNav-activeThing {
-      background-color: hsl(0,4%, 11%)  !important;
-    }
-    .res-nightmode .RES-keyNav-activeElement > .tagline,
-    .res-nightmode .RES-keyNav-activeElement .md-container > .md,
-    .res-nightmode .RES-keyNav-activeElement .md-container > .md p {
-      color: #FFFFFF!important;
-    }
-    .unvoted, .link .rank {
-      color: #c6c6c6 !important;
-    }
-    .flat-list a {
-      color: rgb(158, 158, 158) !important;
-    }
-    .thing .title:visited, .combined-search-page .search-result a:visited, .combined-search-page .search-result a:visited > mark {
-      color: rgb(166, 166, 166);
-    }
-    .thing .title, h1, h2, h3, h4, p {
-      color: rgb(222, 222, 222);
-    }
+		.content{
+			background-color: hsl(0,0%,10%)	!important;
+		}
+		.thing {
+			background: hsl(0,0%,14%) !important;
+		}
+		.subreddit, .author {
+			color: rgba(20, 150, 220, 0.8) !important;
+		}
+		.domain a {
+			color: rgb(173, 216, 230) !important;
+		}
+		.live-timestamp {
+			color: #898963 !important
+		}
+		.tagline {
+			color: #hsl(0, 0%, 53%) !important;
+		}
+		.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container, .res-nightmode.res-commentBoxes .comment.RES-keyNav-activeThing,
+		.child>.sitetable> .comment.RES-keyNav-activeThing,
+		.child>.sitetable>.comment > .child>.sitetable> .comment.RES-keyNav-activeThing,
+		.child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable > .comment.RES-keyNav-activeThing {
+			background-color: hsl(0,5%,15%)	!important;
+		}
+		.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container,	.thing.link.RES-keyNav-activeThing {
+			background-color: hsl(0,4%, 11%)	!important;
+		}
+		.res-nightmode .RES-keyNav-activeElement > .tagline,
+		.res-nightmode .RES-keyNav-activeElement .md-container > .md,
+		.res-nightmode .RES-keyNav-activeElement .md-container > .md p {
+			color: #FFFFFF!important;
+		}
+		.unvoted, .link .rank {
+			color: #c6c6c6 !important;
+		}
+		.flat-list a {
+			color: rgb(158, 158, 158) !important;
+		}
+		.thing .title:visited, .combined-search-page .search-result a:visited, .combined-search-page .search-result a:visited > mark {
+			color: rgb(166, 166, 166);
+		}
+		.thing .title, h1, h2, h3, h4, p {
+			color: rgb(222, 222, 222);
+		}
 
-    .res-nightmode .flair, .res-nightmode .linkflairlabel {
-      color: white;
-    }
+		.res-nightmode .flair, .res-nightmode .linkflairlabel {
+			color: white;
+		}
 
-    `;
+		`;
     function appendStyleEl() {
         if (document.head) {
             document.head.appendChild(styleEl);
@@ -719,51 +702,69 @@ RESES.extendType(RESES, {
         }
     },
     config: (function localSettings() {
-        var _cachedEnableAutoDownvoting = null;
+        const cache = {};
+        function getSetting(key, _default) {
+            if (cache[key] !== undefined) {
+                return cache[key];
+            }
+            var value = localStorage.getItem('reses-' + key);
+            var setting = JSON.parse(value || _default.toString());
+            cache[key] = setting;
+            return setting;
+        }
+        function setSetting(key, value) {
+            cache[key] = value;
+            localStorage.setItem('reses-' + key, JSON.stringify(value));
+        }
         return {
-            get bEnableAutoDownvoting() {
-                return _cachedEnableAutoDownvoting !== null ? _cachedEnableAutoDownvoting : (_cachedEnableAutoDownvoting =
-                    JSON.parse(localStorage.getItem('reses-enableautodownvoting') || 'false'));
-            },
-            set bEnableAutoDownvoting(value) { localStorage.setItem('reses-enableautodownvoting', JSON.stringify(_cachedEnableAutoDownvoting = value)); }
+            get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
+            set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
+            get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
+            set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
+            get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
+            set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
         };
     })(),
     btnFilterPost: ((window, document, RESES) => {
         const btn = Element.From(`
-      <li>
-        <style type="text/css" scoped>
-          body.goodthings #filtermode .goodthings {  color: lightgreen;  }
-          body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {  color: tomato;  }
-          #btnDropdown { position:relative; display: inline-block; }
-          #btnDropdown:hover .dropdown-content {display: block;}
-          #btnDropdown:hover .dropbtn {background-color: #3e8e41;}
-          .dropdown-content { display:none; position: absolute; min-width: 160px; z-index:10; margin-top 5px; background-color: rgb(50, 50, 50); }
-          ul.dropdown-content li, ul.dropdown-content li a {
-            display: block; margin: 2px; min-width: 160px; padding: 5px; background-color: rgb(50, 50, 50);
-            cursor: pointer;
-          }
-          ul.dropdown-content li:hover { background-color: rgb(70, 70, 70); }
-          ul.dropdown-content li:hover a { background-color: rgb(70, 70, 70); color: lightgreen; }
-        </style>
-        <div id="btnDropdown">
-          <a id="filtermode" href="#2">
-            <span class='goodpost'>GoodPosts(<span></span>)</span>&nbsp-&nbsp
-            <span class='filteredpost'>Filtered(<span></span>)</span>&nbsp-&nbsp
-            <span class='shitpost'>Downvoted(<span></span>)</span>
-          </a>
-          <ul class='dropdown-content'>
-            <li><a id="downvoteFiltered"><span>Downvote all filtered content</span></a></li>
-            <li><a id="removeDownvotes"><span>Remove Auto Downvotes</span></a></li>
-            <li><a id="enableAutoDownvoting"><span>Enable Auto Downvoting</span></a></li>
-            <li><a id="disableAutoDownvoting"><span>Disable Auto Downvoting</span></a></li>
-          </ul>
-        </div>
-      </li>`);
-        const elGoodposts = btn.querySelector('.goodpost span');
-        const elFilteredposts = btn.querySelector('.filteredpost span');
-        const elShitposts = btn.querySelector('.shitpost span');
-        const elEnableAutoDownvoting = btn.querySelector('#enableAutoDownvoting');
-        const elDisableAutoDownvoting = btn.querySelector('#disableAutoDownvoting');
+			<li>
+				<style type="text/css" scoped>
+					body.goodthings #filtermode .goodthings {	color: lightgreen;	}
+					body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {	color: tomato;	}
+					#btnDropdown { position:relative; display: inline-block; }
+					#btnDropdown:hover .dropdown-content {display: block;}
+					#btnDropdown:hover .dropbtn {background-color: #3e8e41;}
+					.dropdown-content { display:none; position: absolute; min-width: 160px; z-index:10; margin-top 5px; background-color: rgb(50, 50, 50); }
+					ul.dropdown-content li, ul.dropdown-content li a {
+						display: block; margin: 2px; min-width: 160px; padding: 5px; background-color: rgb(50, 50, 50);
+						cursor: pointer;
+					}
+					ul.dropdown-content li:hover { background-color: rgb(70, 70, 70); }
+					ul.dropdown-content li:hover a { background-color: rgb(70, 70, 70); color: lightgreen; }
+					ul.dropdown-content.downvotingenabled li.downvotingdisabled { display: none; }
+					ul.dropdown-content.downvotingdisabled li.downvotingenabled { display: none; }
+				</style>
+				<div id="btnDropdown">
+					<a id="filtermode" href="#2">
+						<span class='goodpost'>GoodPosts(<span></span>)</span>&nbsp-&nbsp
+						<span class='filteredpost'>Filtered(<span></span>)</span>&nbsp-&nbsp
+						<span class='shitpost'>Downvoted(<span></span>)</span>
+					</a>
+					<ul class='dropdown-content'>
+						<li><a id="downvoteFiltered"><span>Downvote all filtered content</span></a></li>
+						<li><a id="removeDownvotes"><span>Remove Auto Downvotes</span></a></li>
+
+						<li class='downvotingdisabled'><a id="enableAutoDownvoting"><span>Enable Auto Downvoting</span></a></li>
+						<li class='downvotingenabled'><a id="disableAutoDownvoting"><span>Disable Auto Downvoting</span></a></li>
+
+						<li class='downvotingenabled'><a id="enableFilterDownvoting"><span>Enable Filter Based Downvoting</span></a></li>
+						<li class='downvotingenabled'><a id="disableFilterDownvoting"><span>Disable Filter Based Downvoting</span></a></li>
+
+						<li class='downvotingenabled'><a id="enableRepostDownvoting"><span>Enable Repost Downvoting</span></a></li>
+						<li class='downvotingenabled'><a id="disableRepostDownvoting"><span>Disable Repost Downvoting</span></a></li>
+					</ul>
+				</div>
+			</li>`);
         btn.querySelector('#filtermode').addEventListener('click', () => {
             var cls = document.body.classList;
             if (cls.contains('goodpost')) {
@@ -779,7 +780,7 @@ RESES.extendType(RESES, {
         });
         btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
             RESES.linkListingMgr.listingCollection.forEach((post) => {
-                if (post.isFilteredByRES || post.isFilteredByZ) {
+                if (post.isFilteredByRES) {
                     post.autoDownvotePost();
                 }
             });
@@ -791,22 +792,54 @@ RESES.extendType(RESES, {
             });
             RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
         });
-        elEnableAutoDownvoting.addEventListener('click', () => {
-            RESES.config.bEnableAutoDownvoting = true;
-            elDisableAutoDownvoting.parentElement.style.display = "block";
-            elEnableAutoDownvoting.parentElement.style.display = "none";
+        const elDropdownContent = btn.querySelector('.dropdown-content');
+        btn.querySelector('#enableAutoDownvoting').addEventListener('click', () => {
+            RESES.config.bAutoDownvoting = true;
+            elDropdownContent.classList.remove('downvotingdisabled');
+            elDropdownContent.classList.add('downvotingenabled');
         });
-        elDisableAutoDownvoting.addEventListener('click', () => {
-            RESES.config.bEnableAutoDownvoting = false;
-            elDisableAutoDownvoting.parentElement.style.display = "none";
-            elEnableAutoDownvoting.parentElement.style.display = "block";
+        btn.querySelector('#disableAutoDownvoting').addEventListener('click', () => {
+            RESES.config.bAutoDownvoting = false;
+            elDropdownContent.classList.remove('downvotingenabled');
+            elDropdownContent.classList.add('downvotingdisabled');
+        });
+        const elEnableFilterDownvoting = btn.querySelector('#enableFilterDownvoting');
+        const elDisableFilterDownvoting = btn.querySelector('#disableFilterDownvoting');
+        elEnableFilterDownvoting.addEventListener('click', () => {
+            RESES.config.bFilterDownvoting = true;
+            elEnableFilterDownvoting.parentElement.style.display = 'none';
+            elDisableFilterDownvoting.parentElement.style.display = 'block';
+        });
+        elDisableFilterDownvoting.addEventListener('click', () => {
+            RESES.config.bFilterDownvoting = false;
+            elEnableFilterDownvoting.parentElement.style.display = 'block';
+            elDisableFilterDownvoting.parentElement.style.display = 'none';
+        });
+        const elEnableRepostDownvoting = btn.querySelector('#enableRepostDownvoting');
+        const elDisableRepostDownvoting = btn.querySelector('#disableRepostDownvoting');
+        elEnableRepostDownvoting.addEventListener('click', () => {
+            RESES.config.bRepostDownvoting = true;
+            elEnableRepostDownvoting.parentElement.style.display = 'none';
+            elDisableRepostDownvoting.parentElement.style.display = 'block';
+        });
+        elDisableRepostDownvoting.addEventListener('click', () => {
+            RESES.config.bRepostDownvoting = false;
+            elEnableRepostDownvoting.parentElement.style.display = 'block';
+            elDisableRepostDownvoting.parentElement.style.display = 'none';
         });
         RESES._preinitList.push(() => {
-            if (RESES.config.bEnableAutoDownvoting) {
-                elEnableAutoDownvoting.parentElement.style.display = "none";
+            elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
+            if (RESES.config.bFilterDownvoting) {
+                elEnableFilterDownvoting.parentElement.style.display = 'none';
             }
             else {
-                elDisableAutoDownvoting.parentElement.style.display = "none";
+                elDisableFilterDownvoting.parentElement.style.display = 'none';
+            }
+            if (RESES.config.bRepostDownvoting) {
+                elEnableRepostDownvoting.parentElement.style.display = 'none';
+            }
+            else {
+                elDisableRepostDownvoting.parentElement.style.display = 'none';
             }
         });
         RESES._initList.push(() => {
@@ -815,6 +848,9 @@ RESES.extendType(RESES, {
                 RESES.addTabBarButton(btn);
             }
         });
+        const elGoodposts = btn.querySelector('.goodpost span');
+        const elFilteredposts = btn.querySelector('.filteredpost span');
+        const elShitposts = btn.querySelector('.shitpost span');
         return {
             get btn() { return btn; },
             update: function (counters) {
@@ -917,10 +953,10 @@ RESES.extendType(RESES, {
                 this.handleScroll = () => _handleScroll(this);
                 this.toggleSidebar = (bool) => { RESES.doAsync(() => { _toggleSidebar(this, bool); }); };
                 this.el = Element.From(`
-          <div id='${id}' class='sidebar'>
-            <div class='sb-handle'></div>
-            <div class='sb-track'></div>
-          </div>`);
+					<div id='${id}' class='sidebar'>
+						<div class='sb-handle'></div>
+						<div class='sb-track'></div>
+					</div>`);
                 this.handle = this.el.firstElementChild;
                 this.track = this.el.lastElementChild;
                 this.sled = null;
@@ -1034,12 +1070,12 @@ RESES.extendType(RESES, {
                     if (post.isExpanded) {
                         post.post.getElementsByClassName('expando-button')[0].click();
                     }
-                    if (ev.isTrusted && !post.bAutoDownvoted && post.url) {
+                    if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
                         RESES.linkRegistry.addBlockedUrl(post.url);
                     }
                 }
                 else {
-                    if (ev.isTrusted && !post.bAutoDownvoted && post.url) {
+                    if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
                         RESES.linkRegistry.removeBlockedUrl(post.url);
                     }
                 }
@@ -1077,7 +1113,6 @@ RESES.extendType(RESES, {
                 this.bIsPorn = false;
                 this.bIsAnime = false;
                 this.bIsAnnoying = false;
-                this.bAutoDownvoted = false;
                 this.setupPost();
             }
             get age() { return Date.now() - this.timestamp; }
@@ -1092,24 +1127,27 @@ RESES.extendType(RESES, {
             get isNSFW() { return this.post.classList.contains('over18'); }
             get isCrosspost() { return this.post.dataset.numCrossposts | 0 > 0; }
             get isFilteredByRES() { return this.post.classList.contains('RESFiltered'); }
-            set isFilteredByRES(bool) { this.post.classList.toggle('RESFiltered', bool); }
-            get isFilteredByZ() { return this.post.classList.contains('ZFiltered'); }
-            set isFilteredByZ(bool) { this.post.classList.toggle('ZFiltered', bool); }
+            get isAutoDownvoted() { return this.post.classList.contains('autodownvoted'); }
+            set isAutoDownvoted(bool) { this.post.classList.toggle('autodownvoted', bool); }
+            get bMatchesFilter() { return this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying; }
             get shouldBeDownvoted() {
-                return this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying));
+                return this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter));
             }
             autoDownvotePost() {
-                if (!RESES.bIsUserPage && RESES.config.bEnableAutoDownvoting && this.isUnvoted && this.voteArrowDown !== null && this.ageDays < 30) {
-                    this.bAutoDownvoted = true;
-                    RESES.doAsync(() => this.voteArrowDown.click());
+                var cfg = RESES.config;
+                if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted && this.voteArrowDown !== null && this.ageDays < 30) {
+                    if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
+                        this.isAutoDownvoted = true;
+                        RESES.doAsync(() => this.voteArrowDown.click());
+                    }
                     if (this.expandobox) {
                         this.expandobox.hidden = true;
                     }
                 }
             }
             removeAutoDownvote() {
-                if (this.voteArrowDown && this.isDownvoted && this.bAutoDownvoted) {
-                    this.bAutoDownvoted = false;
+                if (this.voteArrowDown && this.isDownvoted && this.isAutoDownvoted) {
+                    this.isAutoDownvoted = false;
                     this.voteArrowDown.click();
                     if (this.expandobox) {
                         this.expandobox.hidden = false;
@@ -1169,7 +1207,6 @@ RESES.extendType(RESES, {
                     this.post.classList.add('isannoying');
                 }
                 if (this.shouldBeDownvoted) {
-                    this.isFilteredByZ = true;
                     this.autoDownvotePost();
                 }
                 if (this.expandobox !== null) {
@@ -1194,11 +1231,6 @@ RESES.extendType(RESES, {
                     shit++;
                 }
                 else if (_p.isFilteredByRES) {
-                    _p.isFilteredByRES = false;
-                    _p.isFilteredByZ = true;
-                    filtered++;
-                }
-                else if (_p.isFilteredByZ) {
                     filtered++;
                 }
                 else {

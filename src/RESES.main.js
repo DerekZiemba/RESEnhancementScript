@@ -18,14 +18,27 @@ RESES.extendType(RESES, {
 	},
 
 	config: (function localSettings() {
-		var _cachedEnableAutoDownvoting = null;
+		const cache = {};
 
+		function getSetting(key, _default) {
+			if (cache[key] !== undefined) { return cache[key]; }
+			var value = localStorage.getItem('reses-' + key);
+			var setting = JSON.parse(value || _default.toString());
+			cache[key] = setting;
+			return setting;
+			// return cache[key] !== null ? cache[key] : (cache[key] = JSON.parse(localStorage.getItem('reses-' + key) || _default.toString()));
+		}
+		function setSetting(key, value) {
+			cache[key] = value;
+			localStorage.setItem('reses-' + key, JSON.stringify(value));
+		}
 		return {
-			get bEnableAutoDownvoting() {
-				return _cachedEnableAutoDownvoting !== null ? _cachedEnableAutoDownvoting : (_cachedEnableAutoDownvoting =
-					JSON.parse(localStorage.getItem('reses-enableautodownvoting') || 'false'));
-			},
-			set bEnableAutoDownvoting(value) { localStorage.setItem('reses-enableautodownvoting', JSON.stringify(_cachedEnableAutoDownvoting = value)); }
+			get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
+			set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
+			get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
+			set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
+			get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
+			set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
 		};
 	})(),
 
@@ -45,6 +58,8 @@ RESES.extendType(RESES, {
 					}
 					ul.dropdown-content li:hover { background-color: rgb(70, 70, 70); }
 					ul.dropdown-content li:hover a { background-color: rgb(70, 70, 70); color: lightgreen; }
+					ul.dropdown-content.downvotingenabled li.downvotingdisabled { display: none; }
+					ul.dropdown-content.downvotingdisabled li.downvotingenabled { display: none; }
 				</style>
 				<div id="btnDropdown">
 					<a id="filtermode" href="#2">
@@ -55,16 +70,18 @@ RESES.extendType(RESES, {
 					<ul class='dropdown-content'>
 						<li><a id="downvoteFiltered"><span>Downvote all filtered content</span></a></li>
 						<li><a id="removeDownvotes"><span>Remove Auto Downvotes</span></a></li>
-						<li><a id="enableAutoDownvoting"><span>Enable Auto Downvoting</span></a></li>
-						<li><a id="disableAutoDownvoting"><span>Disable Auto Downvoting</span></a></li>
+
+						<li class='downvotingdisabled'><a id="enableAutoDownvoting"><span>Enable Auto Downvoting</span></a></li>
+						<li class='downvotingenabled'><a id="disableAutoDownvoting"><span>Disable Auto Downvoting</span></a></li>
+
+						<li class='downvotingenabled'><a id="enableFilterDownvoting"><span>Enable Filter Based Downvoting</span></a></li>
+						<li class='downvotingenabled'><a id="disableFilterDownvoting"><span>Disable Filter Based Downvoting</span></a></li>
+
+						<li class='downvotingenabled'><a id="enableRepostDownvoting"><span>Enable Repost Downvoting</span></a></li>
+						<li class='downvotingenabled'><a id="disableRepostDownvoting"><span>Disable Repost Downvoting</span></a></li>
 					</ul>
 				</div>
 			</li>`);
-		const elGoodposts = btn.querySelector('.goodpost span');
-		const elFilteredposts = btn.querySelector('.filteredpost span');
-		const elShitposts = btn.querySelector('.shitpost span');
-		const elEnableAutoDownvoting = btn.querySelector('#enableAutoDownvoting');
-		const elDisableAutoDownvoting = btn.querySelector('#disableAutoDownvoting');
 
 		btn.querySelector('#filtermode').addEventListener('click', () => {
 			var cls = document.body.classList;
@@ -80,7 +97,7 @@ RESES.extendType(RESES, {
 
 		btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
 			RESES.linkListingMgr.listingCollection.forEach((post) => {
-				if (post.isFilteredByRES || post.isFilteredByZ) {
+				if (post.isFilteredByRES) {
 					post.autoDownvotePost();
 				}
 			});
@@ -94,23 +111,57 @@ RESES.extendType(RESES, {
 			RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
 		});
 
-		elEnableAutoDownvoting.addEventListener('click', () => {
-			RESES.config.bEnableAutoDownvoting = true;
-			elDisableAutoDownvoting.parentElement.style.display = "block";
-			elEnableAutoDownvoting.parentElement.style.display = "none";
+		const elDropdownContent = btn.querySelector('.dropdown-content');
+		btn.querySelector('#enableAutoDownvoting').addEventListener('click', () => {
+			RESES.config.bAutoDownvoting = true;
+			elDropdownContent.classList.remove('downvotingdisabled');
+			elDropdownContent.classList.add('downvotingenabled');
 		});
 
-		elDisableAutoDownvoting.addEventListener('click', () => {
-			RESES.config.bEnableAutoDownvoting = false;
-			elDisableAutoDownvoting.parentElement.style.display = "none";
-			elEnableAutoDownvoting.parentElement.style.display = "block";
+		btn.querySelector('#disableAutoDownvoting').addEventListener('click', () => {
+			RESES.config.bAutoDownvoting = false;
+			elDropdownContent.classList.remove('downvotingenabled');
+			elDropdownContent.classList.add('downvotingdisabled');
 		});
+
+		const elEnableFilterDownvoting = btn.querySelector('#enableFilterDownvoting');
+		const elDisableFilterDownvoting = btn.querySelector('#disableFilterDownvoting');
+		elEnableFilterDownvoting.addEventListener('click', () => {
+			RESES.config.bFilterDownvoting = true;
+			elEnableFilterDownvoting.parentElement.style.display = 'none';
+			elDisableFilterDownvoting.parentElement.style.display = 'block';
+		});
+		elDisableFilterDownvoting.addEventListener('click', () => {
+			RESES.config.bFilterDownvoting = false;
+			elEnableFilterDownvoting.parentElement.style.display = 'block';
+			elDisableFilterDownvoting.parentElement.style.display = 'none';
+		});
+
+		const elEnableRepostDownvoting = btn.querySelector('#enableRepostDownvoting');
+		const elDisableRepostDownvoting = btn.querySelector('#disableRepostDownvoting');
+		elEnableRepostDownvoting.addEventListener('click', () => {
+			RESES.config.bRepostDownvoting = true;
+			elEnableRepostDownvoting.parentElement.style.display = 'none';
+			elDisableRepostDownvoting.parentElement.style.display = 'block';
+		});
+		elDisableRepostDownvoting.addEventListener('click', () => {
+			RESES.config.bRepostDownvoting = false;
+			elEnableRepostDownvoting.parentElement.style.display = 'block';
+			elDisableRepostDownvoting.parentElement.style.display = 'none';
+		});
+
 
 		RESES._preinitList.push(() => {
-			if (RESES.config.bEnableAutoDownvoting) {
-				elEnableAutoDownvoting.parentElement.style.display = "none";
+			elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
+			if (RESES.config.bFilterDownvoting) {
+				elEnableFilterDownvoting.parentElement.style.display = 'none';
 			} else {
-				elDisableAutoDownvoting.parentElement.style.display = "none";
+				elDisableFilterDownvoting.parentElement.style.display = 'none';
+			}
+			if (RESES.config.bRepostDownvoting) {
+				elEnableRepostDownvoting.parentElement.style.display = 'none';
+			} else {
+				elDisableRepostDownvoting.parentElement.style.display = 'none';
 			}
 		});
 
@@ -120,6 +171,10 @@ RESES.extendType(RESES, {
 				RESES.addTabBarButton(btn);
 			}
 		});
+
+		const elGoodposts = btn.querySelector('.goodpost span');
+		const elFilteredposts = btn.querySelector('.filteredpost span');
+		const elShitposts = btn.querySelector('.shitpost span');
 
 		return {
 			get btn() { return btn; },
@@ -355,11 +410,11 @@ RESES.extendType(RESES, {
 					if (post.isExpanded) {
 						post.post.getElementsByClassName('expando-button')[0].click();
 					}
-					if (ev.isTrusted && !post.bAutoDownvoted && post.url) {
+					if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
 						RESES.linkRegistry.addBlockedUrl(post.url);
 					}
 				} else {
-					if (ev.isTrusted && !post.bAutoDownvoted && post.url) {
+					if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
 						RESES.linkRegistry.removeBlockedUrl(post.url);
 					}
 				}
@@ -405,7 +460,6 @@ RESES.extendType(RESES, {
 				this.bIsPorn = false;
 				this.bIsAnime = false;
 				this.bIsAnnoying = false;
-				this.bAutoDownvoted = false;
 
 				this.setupPost();
 			}
@@ -421,24 +475,27 @@ RESES.extendType(RESES, {
 			get isNSFW() { return this.post.classList.contains('over18'); }
 			get isCrosspost() { return this.post.dataset.numCrossposts | 0 > 0; }
 			get isFilteredByRES() { return this.post.classList.contains('RESFiltered'); }
-			set isFilteredByRES(bool) { this.post.classList.toggle('RESFiltered', bool); }
-			get isFilteredByZ() { return this.post.classList.contains('ZFiltered'); }
-			set isFilteredByZ(bool) { this.post.classList.toggle('ZFiltered', bool); }
+			get isAutoDownvoted() { return this.post.classList.contains('autodownvoted'); }
+			set isAutoDownvoted(bool) { this.post.classList.toggle('autodownvoted', bool); }
+			get bMatchesFilter() { return this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying; }
 			get shouldBeDownvoted() {
-				return this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying));
+				return this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter));
 			}
 			autoDownvotePost() {
-				if (!RESES.bIsUserPage && RESES.config.bEnableAutoDownvoting && this.isUnvoted && this.voteArrowDown !== null && this.ageDays < 30) {
-					this.bAutoDownvoted = true;
-					//Since posts are autodownvoted during creation in initLinkListings, calling the click handler now will result in substantial overhead
-					// For 100 posts, 3 of which get downvoted, overhead is decreased from 100ms to 8ms.
-					RESES.doAsync(()=>this.voteArrowDown.click());
+				var cfg = RESES.config;
+				if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted && this.voteArrowDown !== null && this.ageDays < 30) {
+					if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
+						this.isAutoDownvoted = true;
+						//Since posts are autodownvoted during creation in initLinkListings, calling the click handler now will result in substantial overhead
+						// For 100 posts, 3 of which get downvoted, overhead is decreased from 100ms to 8ms.
+						RESES.doAsync(()=>this.voteArrowDown.click());
+					}
 					if (this.expandobox) { this.expandobox.hidden = true; }
 				}
 			}
 			removeAutoDownvote() {
-				if (this.voteArrowDown && this.isDownvoted && this.bAutoDownvoted) {
-					this.bAutoDownvoted = false;
+				if (this.voteArrowDown && this.isDownvoted && this.isAutoDownvoted) {
+					this.isAutoDownvoted = false;
 					this.voteArrowDown.click();
 					if (this.expandobox) { this.expandobox.hidden = false; }
 				}
@@ -494,7 +551,6 @@ RESES.extendType(RESES, {
 				if (this.bIsKarmaWhore) { this.post.classList.add('iskarmawhore'); }
 				if (this.bIsAnnoying) { this.post.classList.add('isannoying'); }
 				if (this.shouldBeDownvoted) {
-					this.isFilteredByZ = true;
 					this.autoDownvotePost();
 				}
 
@@ -526,10 +582,6 @@ RESES.extendType(RESES, {
 				if (_p.isDownvoted) {
 					shit++;
 				} else if (_p.isFilteredByRES) {
-					_p.isFilteredByRES = false;
-					_p.isFilteredByZ = true;
-					filtered++;
-				} else if (_p.isFilteredByZ) {
 					filtered++;
 				} else {
 					good++;

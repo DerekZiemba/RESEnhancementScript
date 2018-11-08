@@ -72,36 +72,19 @@
 
 			body.goodpost #siteTable .thing.zregistered { display: block !important; }
 			body.goodpost #siteTable .thing.zregistered.RESFiltered,
-			body.goodpost #siteTable .thing.zregistered.ZFiltered,
-			body.goodpost #siteTable .thing.zregistered.isrepost,
-			body.goodpost #siteTable .thing.zregistered.iskarmawhore {	display: none !important; }
+			body.goodpost #siteTable .thing.zregistered.autodownvoted {	display: none !important; }
 
+			body.filteredpost #siteTable .thing.zregistered.RESFiltered { display: block !important; }
 			body.filteredpost #siteTable .thing.zregistered,
-			body.filteredpost #siteTable .thing.zregistered.RESFiltered.isrepost,
-			body.filteredpost #siteTable .thing.zregistered.RESFiltered.iskarmawhore,
-			body.filteredpost #siteTable .thing.zregistered.ZFiltered.isrepost,
-			body.filteredpost #siteTable .thing.zregistered.ZFiltered.iskarmawhore { display: none !important; }
+			body.filteredpost #siteTable .thing.zregistered.autodownvoted { display: none !important; }
 
-			body.filteredpost #siteTable .thing.zregistered.RESFiltered,
-			body.filteredpost #siteTable .thing.zregistered.ZFiltered { display: block !important; }
-
+			body.shitpost #siteTable .thing.zregistered.autodownvoted {	display: block !important; }
 			body.shitpost #siteTable .thing.zregistered,
-			body.shitpost #siteTable .thing.zregistered.RESFiltered,
-			body.shitpost #siteTable .thing.zregistered.ZFiltered { display: none !important; }
-
-
-			body.shitpost #siteTable .thing.zregistered.isrepost,	body.shitpost #siteTable .thing.zregistered.iskarmawhore {	display: block !important; }
+			body.shitpost #siteTable .thing.zregistered.RESFiltered:not(.autodownvoted) { display: none !important; }
 
 
 		body.goodpost #filtermode .goodpost {	color: lightgreen;	}
 		body.shitpost #filtermode .shitpost, body.filteredpost #filtermode .filteredpost {	color: tomato;	}
-
-		body.anti-resfilter .thing:not(.RESFiltered), body.anti-resfilter .thing:not(.ZFiltered) {
-			display: none;
-		}
-		body.anti-resfilter #siteTable .thing.RESFiltered, body.anti-resfilter #siteTable .thing.ZFiltered {
-			display: block !important;
-		}
 
 
 		.res-commentBoxes .thing.comment {
