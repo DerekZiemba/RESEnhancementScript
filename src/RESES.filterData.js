@@ -130,14 +130,20 @@ RESES.filterData = {
 		"pegging_unkinked", "RetrousseTits", "hotclub", "smashbros34", "DegradingHoles", "blacktears", "TheRedFox", "Shadman",
 		"nsfwedit", "MissPrincessKay", "whoredrobe", "Rikka_Takarada", "NakedOnStage", "pizzadare", "SubwayHentai",
 		"Hotdogging", "DraculaBiscuits", "wifepictrading", "CedehsHentai", "VerifiedFeet", "AzurLewd", "miskhalifa",
-		"kaibasmistress", "DeliciousTraps"
+		"kaibasmistress", "DeliciousTraps", "mila_azul", "FauxBait", "MyCherryCrush", "Alisai", "GifsOfRemoval",
+		"HarliLotts", "BigBoobsWithFriends", "gothsluts", "chickswearingchucks", "Atago", "CelebrityPenis",
+		"fuckingmachines", "IShouldBuyABoat", "CosplayBoobs", "taboofans", "emogirls", "HighHeels", "AbusePorn2",
+		"leannadecker", "asiangirlswhitecocks", "Pushing", "maturemilf", "Lordosis", "deathmetalgfclub",
+		"WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
+		"mila_azul", "sex_comics"
 	].map(x => x && x.toLowerCase()),
 
 	pornaccounts: [
 		"lilmshotstuff", "Bl0ndeB0i", "Alathenia", "kinkylilkittyy", "Immediateunmber", "justsomegirlidk", "serenityjaneee",
 		"Urdadstillwantsme", "therealtobywong", "sarah-xxx", "RubyLeClaire", "chickpeasyx", "rizzzzzy",
 		"clarabelle_says", "Telari_Love", "purplehailstorm", "Peach_Legend", "NetflixandChillMe", "xrxse",
-		"alomaXsteele", "BeaYork", "Littlebitdramatic", "fitchers_bird"
+		"alomaXsteele", "BeaYork", "Littlebitdramatic", "fitchers_bird", "CalicoKitty19", "ILikeMakingPornGifs",
+		"FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413"
 	].map(x => x && x.toLowerCase()),
 
 	animesubs: [
