@@ -7,9 +7,10 @@
 // @author       Derek Ziemba
 // @include        *://*.reddit.*/*
 // @noframes
-// @run-at		document-start
+// @run-at			 document-start
 
-/** Uncomment out the following @require and point to your local directory to run your own version of the script */
-// @require      file:///A:/Dropbox/Scripts/.js/RESEnhancementScript/dist/RESEnhancementScript.js
+/** Uncomment out the @require to github and point to your local directory to run your own version of the script */
+// @require			https://raw.githubusercontent.com/DerekZiemba/RESEnhancementScript/master/dist/RESEnhancementScript.js
+// // @require      file:///A:/Dropbox/Scripts/.js/RESEnhancementScript/dist/RESEnhancementScript.js
 
 // ==/UserScript==
