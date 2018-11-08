@@ -1,0 +1,17 @@
+{
+	"compileOnSave": true,
+	"compilerOptions": {
+		"target": "ES6",
+		"module":"amd",
+		"pretty": false,
+		"outFile": "dist/RESEnhancementScript.js",
+		"watch": true,
+		"allowJs": true,
+		"removeComments": true,
+		"strict": true
+	},
+	"include": [
+		"src/*"
+	],
+	"exclude": []
+}
