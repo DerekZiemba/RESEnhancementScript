@@ -5,7 +5,7 @@
 
 "use strict";
 
-const RESES = window.RESES = (unsafeWindow | window).RESES = {
+const RESES = window.RESES = {
 	extendType: (function () {
 		const defProp = Object.defineProperty;
 		const assign = Object.assign;
@@ -384,3 +384,5 @@ RESES.extendType(DOMTokenList.prototype, {
 		return false;
 	}
 });
+
+if (unsafeWindow) { unsafeWindow.RESES = RESES; }
