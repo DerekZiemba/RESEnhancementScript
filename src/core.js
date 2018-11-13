@@ -7,7 +7,7 @@ RESES.extendType(RESES, {
 	bIsUserPage: window.location.pathname.includes('/user/'),
 	get bIsMultireddit() {
 		delete this.bIsMultireddit;
-		return this.bIsMultireddit = document.body.classList.contains('multi-page');
+		return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
 	},
 
 	config: (function localSettings() {

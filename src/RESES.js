@@ -1,8 +1,11 @@
 /// <reference path="styler.js" />
+/*global unsafeWindow */ //for greasemonkey
+/*global DOMTokenList */
+
 
 "use strict";
 
-const RESES = window.RESES = {
+const RESES = window.RESES = (unsafeWindow | window).RESES = {
 	extendType: (function () {
 		const defProp = Object.defineProperty;
 		const assign = Object.assign;
@@ -26,7 +29,7 @@ const RESES = window.RESES = {
 			}
 		}
 
-		function extendType(proto, obj, options) {
+		function extendType(proto, obj, options) { //jshint ignore:line
 			if (!options) { options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false }; }
 			var define = proto instanceof Array ? defineSeveral : defineOne;
 			var descriptors = Object.getOwnPropertyDescriptors(obj);
@@ -74,8 +77,7 @@ const RESES = window.RESES = {
 							this[2] = parseInt(data[3], 16); this[2] = (this[2] << 4) | this[2];
 							break;
 						case 9:
-							this[3] = parseInt(data.substr(7, 2), 16);
-							//Fall Through
+							this[3] = parseInt(data.substr(7, 2), 16); //jshint ignore:line
 						case 7:
 							this[0] = parseInt(data.substr(1,2), 16);
 							this[1] = parseInt(data.substr(3,2), 16);
@@ -163,7 +165,7 @@ const RESES = window.RESES = {
 				this.hidden = false;
 			}
 			cancel() {
-				this.hidden === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer);
+				this.hidden === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer); //jshint ignore:line
 			}
 			start() {
 				this.hidden = document.hidden;
@@ -188,6 +190,14 @@ const RESES = window.RESES = {
 	var _preinitCalls = [];
 	var _initCalls = [];
 
+	function initialize() {
+		while (_initCalls.length > 0) {
+			var func = _initCalls.shift();
+			RESES.doAsync(func);
+		}
+		_initCalls = null;
+	}
+
 	function preinitialize() {
 		if (_preinitCalls !== null) {
 			while (_preinitCalls.length > 0) {
@@ -204,14 +214,6 @@ const RESES = window.RESES = {
 		} else {
 			throw new Error("PreInit Already Executed");
 		}
-	}
-
-	function initialize() {
-		while (_initCalls.length > 0) {
-			var func = _initCalls.shift();
-			RESES.doAsync(func);
-		}
-		_initCalls = null;
 	}
 
 	RESES.extendType(RESES, {
@@ -382,5 +384,3 @@ RESES.extendType(DOMTokenList.prototype, {
 		return false;
 	}
 });
-
-if (unsafeWindow !== undefined) {	unsafeWindow.RESES = RESES; }

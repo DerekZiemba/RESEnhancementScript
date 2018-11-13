@@ -5,7 +5,7 @@
 
 "use strict";
 
-RESES.linkRegistry = ((window, document) => {
+RESES.linkRegistry = (() => {
 	const _links = {};
 	var _blockedUrlsCache = null;
 
@@ -59,10 +59,10 @@ RESES.linkRegistry = ((window, document) => {
 
 	return LinkRegistry;
 
-})(window, window.document);
+})();
 
 
-RESES.LinkListing = ((window, document) => {
+RESES.LinkListing = ((window) => {
 
 	function _updateThumbnail(post) {
 		if (post.thumbnail) { post.thumbnail.style.display = post.isExpanded ? 'none' : ''; }
@@ -237,10 +237,10 @@ RESES.LinkListing = ((window, document) => {
 
 
 	return LinkListing;
-})(window, window.document);
+})(window);
 
 
-RESES.linkListingMgr = ((window, document) => {
+RESES.linkListingMgr = ((document) => {
 	const _newLinkListings = [];
 	const _listingCollection = Array(1000); _listingCollection.index = 0;
 	var linklistingObserver = null;
@@ -315,4 +315,4 @@ RESES.linkListingMgr = ((window, document) => {
 		updateLinkListings: _updateLinkListings
 	};
 
-})(window, window.document);
+})(window.document);

@@ -150,7 +150,7 @@
     }
     appendStyleEl();
 }(window, window.document));
-const RESES = window.RESES = {
+const RESES = window.RESES = (unsafeWindow | window).RESES = {
     extendType: (function () {
         const defProp = Object.defineProperty;
         const assign = Object.assign;
@@ -350,6 +350,13 @@ const RESES = window.RESES = {
 (function initListeners(window, document, RESES) {
     var _preinitCalls = [];
     var _initCalls = [];
+    function initialize() {
+        while (_initCalls.length > 0) {
+            var func = _initCalls.shift();
+            RESES.doAsync(func);
+        }
+        _initCalls = null;
+    }
     function preinitialize() {
         if (_preinitCalls !== null) {
             while (_preinitCalls.length > 0) {
@@ -367,13 +374,6 @@ const RESES = window.RESES = {
         else {
             throw new Error("PreInit Already Executed");
         }
-    }
-    function initialize() {
-        while (_initCalls.length > 0) {
-            var func = _initCalls.shift();
-            RESES.doAsync(func);
-        }
-        _initCalls = null;
     }
     RESES.extendType(RESES, {
         onPreInit: function (method) {
@@ -574,15 +574,12 @@ RESES.extendType(DOMTokenList.prototype, {
         return false;
     }
 });
-if (unsafeWindow !== undefined) {
-    unsafeWindow.RESES = RESES;
-}
 RESES.extendType(RESES, {
     bIsCommentPage: window.location.pathname.includes('/comments/'),
     bIsUserPage: window.location.pathname.includes('/user/'),
     get bIsMultireddit() {
         delete this.bIsMultireddit;
-        return this.bIsMultireddit = document.body.classList.contains('multi-page');
+        return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
     },
     config: (function localSettings() {
         const cache = {};
@@ -778,7 +775,7 @@ RESES.filterData = {
         "ShitThe_DonaldSays", "The_Dotard"
     ].map(x => x && x.toLowerCase())
 };
-RESES.linkRegistry = ((window, document) => {
+RESES.linkRegistry = (() => {
     const _links = {};
     var _blockedUrlsCache = null;
     const LinkRegistry = {
@@ -833,8 +830,8 @@ RESES.linkRegistry = ((window, document) => {
         }
     };
     return LinkRegistry;
-})(window, window.document);
-RESES.LinkListing = ((window, document) => {
+})();
+RESES.LinkListing = ((window) => {
     function _updateThumbnail(post) {
         if (post.thumbnail) {
             post.thumbnail.style.display = post.isExpanded ? 'none' : '';
@@ -1001,8 +998,8 @@ RESES.LinkListing = ((window, document) => {
         }
     }
     return LinkListing;
-})(window, window.document);
-RESES.linkListingMgr = ((window, document) => {
+})(window);
+RESES.linkListingMgr = ((document) => {
     const _newLinkListings = [];
     const _listingCollection = Array(1000);
     _listingCollection.index = 0;
@@ -1073,7 +1070,7 @@ RESES.linkListingMgr = ((window, document) => {
         get listingCollection() { return _listingCollection; },
         updateLinkListings: _updateLinkListings
     };
-})(window, window.document);
+})(window.document);
 RESES.ScrollingSidebar = ((window, document, RESES) => {
     function _toggleSidebar(ss, bState) {
         var cls = ss.el.classList;
