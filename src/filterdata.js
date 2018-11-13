@@ -1,8 +1,8 @@
-/// <reference path="RESES.styler.js" />
-/// <reference path="RESES.core.js" />
+/// <reference path="RESES.js" />
+/// <reference path="core.js" />
+/*global RESES */
 
 "use strict";
-
 RESES.filterData = {
 
 	karmawhores: [
@@ -143,7 +143,7 @@ RESES.filterData = {
 		"Urdadstillwantsme", "therealtobywong", "sarah-xxx", "RubyLeClaire", "chickpeasyx", "rizzzzzy",
 		"clarabelle_says", "Telari_Love", "purplehailstorm", "Peach_Legend", "NetflixandChillMe", "xrxse",
 		"alomaXsteele", "BeaYork", "Littlebitdramatic", "fitchers_bird", "CalicoKitty19", "ILikeMakingPornGifs",
-		"FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413"
+		"FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413", "hastalapasta96"
 	].map(x => x && x.toLowerCase()),
 
 	animesubs: [
@@ -170,7 +170,13 @@ RESES.filterData = {
 	annoyingsubs: [
 		"uglyduckling", "guineapigs", "Rats", "happy", "Blep", "tattoos", "forbiddensnacks", "PrequelMemes",
 		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "The_Mueller", "boottoobig", "politics",
-		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy"
+		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
+		"smashbros", "antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
+		"sneks",
+
+		"AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
+		"LateStageCapitalizm", "MarcheAgainstTrump", "MarchAgainstNazis", "Political_Revolution", "politics", "RussiaLago",
+		"ShitThe_DonaldSays", "The_Dotard"
 	].map(x => x && x.toLowerCase())
 
 };

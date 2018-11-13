@@ -1,11 +1,8 @@
-/// <reference path="RESES.styler.js" />
+/// <reference path="styler.js" />
 
 "use strict";
 
 const RESES = window.RESES = {
-	_preinitList: [],
-	_initList: [],
-
 	extendType: (function () {
 		const defProp = Object.defineProperty;
 		const assign = Object.assign;
@@ -184,10 +181,60 @@ const RESES = window.RESES = {
 			}
 			op.start();
 		};
-	})()
+	})(),
 };
 
-if (unsafeWindow !== undefined) {	unsafeWindow.RESES = RESES; }
+(function initListeners(window, document, RESES) {
+	var _preinitCalls = [];
+	var _initCalls = [];
+
+	function preinitialize() {
+		if (_preinitCalls !== null) {
+			while (_preinitCalls.length > 0) {
+				var func = _preinitCalls.shift();
+				func();
+			}
+			_preinitCalls = null;
+
+			if (document.readyState === 'loading') {
+				window.addEventListener("DOMContentLoaded", initialize);
+			} else {
+				initialize();
+			}
+		} else {
+			throw new Error("PreInit Already Executed");
+		}
+	}
+
+	function initialize() {
+		while (_initCalls.length > 0) {
+			var func = _initCalls.shift();
+			RESES.doAsync(func);
+		}
+		_initCalls = null;
+	}
+
+	RESES.extendType(RESES, {
+		onPreInit: function (method) {
+			if (_preinitCalls !== null) {
+				_preinitCalls.push(method);
+				RESES.debounceMethod(preinitialize);
+			} else {
+				throw new Error("Initialization already in progress. To late to call onPreInit.");
+			}
+		},
+		onInit: function (method) {
+			if (_preinitCalls !== null) {
+				_initCalls.push(method);
+				RESES.debounceMethod(preinitialize);
+			} else {
+				throw new Error("Initialization already in progress. Too late to call onInit.");
+			}
+		}
+	});
+
+})(window, window.document, RESES);
+
 
 /**NOTE: Custom methods that are added to existing types are purposely capitalized. */
 RESES.extendType(Element, {
@@ -336,3 +383,4 @@ RESES.extendType(DOMTokenList.prototype, {
 	}
 });
 
+if (unsafeWindow !== undefined) {	unsafeWindow.RESES = RESES; }

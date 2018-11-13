@@ -1,12 +1,16 @@
+/// <autosync enabled="true" />
+
 {
 	"compileOnSave": true,
 	"compilerOptions": {
-		"target": "ES6",
+		"target": "es6",
+		// "checkJs": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
 		"module":"amd",
 		"pretty": true,
 		"outFile": "dist/RESEnhancementScript.js",
 		"watch": true,
-		"allowJs": true,
 		"removeComments": true,
 		"strict": true
 	},
