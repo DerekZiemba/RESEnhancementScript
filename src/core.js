@@ -5,7 +5,7 @@
 RESES.extendType(RESES, {
 	bIsCommentPage: window.location.pathname.includes('/comments/'),
 	bIsUserPage: window.location.pathname.includes('/user/'),
-	subreddit: /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname)[1].toLowerCase(),
+	subreddit: RESES.elvis(/^\/(?:r\/(\w+)\/)/.exec(window.location.pathname),'1.toLowerCase()'),
 	get bIsMultireddit() {
 		delete this.bIsMultireddit;
 		return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
