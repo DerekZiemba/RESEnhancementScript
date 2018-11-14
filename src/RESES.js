@@ -131,12 +131,17 @@ const RESES = window.RESES = {
 		return Color;
 	}()),
 
-	getNonStandardWindowProperties: function getNonStandardWindowProperties(bAsArray) {
+	getNonStandardWindowProperties: function getNonStandardWindowProperties(win, bAsArray) {
+		if (typeof win === 'boolean') {
+			bAsArray = win; win = window;
+		} else if (win === null || win === undefined) {
+			win = window;
+		}
 		var iframe = document.createElement('iframe'); iframe.style.display = 'none';
 		document.body.appendChild(iframe);
-		var result = Object.getOwnPropertyNames(window).filter(name => !iframe.contentWindow.hasOwnProperty(name));
+		var result = Object.getOwnPropertyNames(win).filter(name => !iframe.contentWindow.hasOwnProperty(name));
 		if (!bAsArray) {
-			result = result.reduce((dict, name) => { dict[name] = window[name]; return dict; }, {});
+			result = result.reduce((dict, name) => { dict[name] = win[name]; return dict; }, {});
 		}
 		document.body.removeChild(iframe);
 		return result;

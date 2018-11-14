@@ -169,14 +169,27 @@ RESES.filterData = {
 
 	annoyingsubs: [
 		"uglyduckling", "guineapigs", "Rats", "happy", "Blep", "tattoos", "forbiddensnacks", "PrequelMemes",
-		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "The_Mueller", "boottoobig", "politics",
+		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig",
 		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
-		"smashbros", "antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
-		"sneks",
+		"antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
+		"sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies"
+	].map(x => x && x.toLowerCase()),
 
+	shows: [
+		"TheSimpsons"
+	].map(x => x && x.toLowerCase()),
+
+	games: [
+		"deadbydaylight", "smashbros", "DestinyTheGame", "destiny2", "Warframe", "NintendoSwitch", "Warhammer40k", "PathOfExile",
+		"zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR"
+	].map(x => x && x.toLowerCase()),
+
+
+	politics: [
 		"AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
 		"LateStageCapitalizm", "MarcheAgainstTrump", "MarchAgainstNazis", "Political_Revolution", "politics", "RussiaLago",
-		"ShitThe_DonaldSays", "The_Dotard"
+		"ShitThe_DonaldSays", "The_Dotard", "Trumpgret", "PoliticalHumor", "The_Mueller", "SandersForPresident",
+		"EnoughTrumpSpam"
 	].map(x => x && x.toLowerCase())
 
 };
