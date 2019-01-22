@@ -6,7 +6,7 @@
 RESES.filterData = {
 
 	karmawhores: [
-		'SlimJones123', 'GallowBoob', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
+		'SlimJones123', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
 		'KevlarYarmulke', 'D5R', 'dickfromaccounting', 'icant-chooseone'
 	].map(x => x && x.toLowerCase()),
 
@@ -135,7 +135,7 @@ RESES.filterData = {
 		"fuckingmachines", "IShouldBuyABoat", "CosplayBoobs", "taboofans", "emogirls", "HighHeels", "AbusePorn2",
 		"leannadecker", "asiangirlswhitecocks", "Pushing", "maturemilf", "Lordosis", "deathmetalgfclub",
 		"WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
-		"mila_azul", "sex_comics"
+		"mila_azul", "sex_comics", "KateeOwen", "Hotwife"
 	].map(x => x && x.toLowerCase()),
 
 	pornaccounts: [
@@ -143,7 +143,8 @@ RESES.filterData = {
 		"Urdadstillwantsme", "therealtobywong", "sarah-xxx", "RubyLeClaire", "chickpeasyx", "rizzzzzy",
 		"clarabelle_says", "Telari_Love", "purplehailstorm", "Peach_Legend", "NetflixandChillMe", "xrxse",
 		"alomaXsteele", "BeaYork", "Littlebitdramatic", "fitchers_bird", "CalicoKitty19", "ILikeMakingPornGifs",
-		"FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413", "hastalapasta96"
+		"FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413", "hastalapasta96", "pumpkinbread717",
+		"Your_Little_Angel"
 	].map(x => x && x.toLowerCase()),
 
 	animesubs: [
@@ -160,7 +161,7 @@ RESES.filterData = {
 		"FortniteFashion", "EstateofMomo", "CellsAtWork", "HighschoolDxD", "BokuNoShipAcademia", "Tsunderes",
 		"ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
 		"Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
-		"pouts", "MyHeroAcademia"
+		"pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz"
 	].map(x => x && x.toLowerCase()),
 
 	annoyingflairs: [
@@ -169,7 +170,7 @@ RESES.filterData = {
 
 	annoyingsubs: [
 		"uglyduckling", "guineapigs", "Rats", "happy", "Blep", "tattoos", "forbiddensnacks", "PrequelMemes",
-		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig",
+		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig", "pitbulls",
 		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
 		"antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
 		"sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies"

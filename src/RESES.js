@@ -51,64 +51,100 @@ const RESES = window.RESES = {
 	}()),
 
 	Color: (function () {
-		function toHex(num, padding) { return num.toString(16).padStart(padding || 2); }
+		function toHex(num, padding) {
+			return num.toString(16).padStart(padding || 2);
+		}
+
 		function parsePart(value) {
+			value = value.trim();
 			var perc = value.lastIndexOf('%');
 			return perc < 0 ? value : value.substr(0, perc);
 		}
+
+		function normalizeComponent(value) {
+			value = parseInt(value);
+			if (value == null || isNaN(value)) { return 0; }
+			return value > 255 ? 255 : (value < 0 ? 0 : value);
+		}
+
 		function Color(data) {
-			if (arguments.length > 1) {
-				this[0] = arguments[0];
-				this[1] = arguments[1];
-				this[2] = arguments[2];
-				if (arguments.length > 3) { this[3] = arguments[3]; }
-			} else if (data instanceof Color || Array.isArray(data)) {
-				this[0] = data[0];
-				this[1] = data[1];
-				this[2] = data[2];
-				this[3] = data[3];
-			} else if (typeof data === "string") {
-				data = data.trim();
-				if (data[0] === '#') {
-					switch (data.length) {
-						case 4:
-							this[0] = parseInt(data[1], 16); this[0] = (this[0] << 4) | this[0];
-							this[1] = parseInt(data[2], 16); this[1] = (this[1] << 4) | this[1];
-							this[2] = parseInt(data[3], 16); this[2] = (this[2] << 4) | this[2];
-							break;
-						case 9:
-							this[3] = parseInt(data.substr(7, 2), 16); //jshint ignore:line
-						case 7:
-							this[0] = parseInt(data.substr(1,2), 16);
-							this[1] = parseInt(data.substr(3,2), 16);
-							this[2] = parseInt(data.substr(5,2), 16);
-							break;
+			this[0] = 255;
+			this[1] = 255;
+			this[2] = 255;
+			this[3] = 255;
+			if (!(data === undefined || data === null || isNaN(data))) {
+				if (arguments.length > 1) {
+					this.r = arguments[0];
+					this.g = arguments[1];
+					this.b = arguments[2];
+					if (arguments.length > 3) { this.a = arguments[3]; }
+				}
+				else if (typeof data === 'string') {
+					data = data.trim().toLowerCase();
+					if (data[0] === '#') {
+						switch (data.length) {
+							case 9:
+								this[3] = parseInt(data.substr(7, 2), 16); //jshint ignore:line
+							case 7:
+								this[0] = parseInt(data.substr(1, 2), 16);
+								this[1] = parseInt(data.substr(3, 2), 16);
+								this[2] = parseInt(data.substr(5, 2), 16);
+								break;
+							case 4:
+								this[0] = parseInt(data[1], 16); this[0] = (this[0] << 4) | this[0];
+								this[1] = parseInt(data[2], 16); this[1] = (this[1] << 4) | this[1];
+								this[2] = parseInt(data[3], 16); this[2] = (this[2] << 4) | this[2];
+								break;
+							default:
+								throw new Error(`Invalid Hex Color: ${data}`);
+						}
 					}
-				} else if (data.startsWith("rgb")) {
-					var parts = data.substr(data[3] === "a" ? 5 : 4, data.length - (data[3] === "a" ? 6 : 5)).split(',');
-					this.r = parsePart(parts[0]);
-					this.g = parsePart(parts[1]);
-					this.b = parsePart(parts[2]);
-					if (parts.length > 3) { this.a = parsePart(parts[3]); }
+					else if (data.startsWith("rgb")) {
+						var parts = (data[3] === 'a' ? data.substr(5, data.length - 6) : data.substr(4, data.length - 5)).split(',');
+						this.r = parsePart(parts[0]);
+						this.g = parsePart(parts[1]);
+						this.b = parsePart(parts[2]);
+						if (parts.length > 3) { this.a = parsePart(parts[3]); }
+					}
+					else {
+						throw new Error(`Invalid Color String: ${data}`);
+					}
+				}
+				else if (data instanceof Color) {
+					this[0] = data[0];
+					this[1] = data[1];
+					this[2] = data[2];
+					this[3] = data[3];
+				}
+				else if (Array.isArray(data)) {
+					this.r = data[0];
+					this.g = data[1];
+					this.b = data[2];
+					if (data.length > 3) { this.a = data[3]; }
 				}
 			}
 		}
+
 		Color.prototype = {
 			constructor: Color,
-			0: 255,
-			1: 255,
-			2: 255,
-			3: 255,
+			get length() { return this[3] === 255 ? 3 : 4; },
 			get r() { return this[0];	},
-			set r(value) { this[0] = value == null ? 0 : Math.max(Math.min(parseInt(value), 255), 0); },
+			set r(value) { this[0] = normalizeComponent(value); },
 			get g() { return this[1];	},
-			set g(value) { this[1] = value == null ? 0 : Math.max(Math.min(parseInt(value), 255), 0); },
+			set g(value) { this[1] = normalizeComponent(value); },
 			get b() { return this[2];	},
-			set b(value) { this[2] = value == null ? 0 : Math.max(Math.min(parseInt(value), 255), 0); },
+			set b(value) { this[2] = normalizeComponent(value); },
 			get a() { return this[3] / 255;	},
-			set a(value) { this[3] = value == null ? 255 : Math.max(Math.min(value > 1 ? value : parseFloat(value) * 255, 255), 0); },
+			set a(value) {
+				value = parseFloat(value);
+				if (!(value == null || isNaN(value))) {
+					if (value < 1) { value = value * 255; }
+					value = Math.floor(value);
+					this[3] = value > 255 ? 255 : (value < 0 ? 0 : value);
+				}
+			},
 			get luma() { return .299 * this.r + .587 * this.g + .114 * this.b; },
-			get inverted() { return new Color(255-this[0], 255-this[1], 255-this[2], this[3]); },
+			get inverted() { return new Color(255 - this[0], 255 - this[1], 255 - this[2], this[3]); },
 			toString: function (option) {
 				if (option === 16) {
 					return '#' + toHex(this.r) + toHex(this.g) + toHex(this.b) + (this[3] === 255 ? '' : toHex(this[3]));
@@ -127,7 +163,6 @@ const RESES = window.RESES = {
 				}
 			}
 		};
-
 		return Color;
 	}()),
 
@@ -216,6 +251,7 @@ const RESES = window.RESES = {
 (function initListeners(window, document, RESES) {
 	var _preinitCalls = [];
 	var _initCalls = [];
+	var _readyCalls = [];
 
 	function initialize() {
 		while (_initCalls.length > 0) {
@@ -243,6 +279,20 @@ const RESES = window.RESES = {
 		}
 	}
 
+	function documentReady() {
+		while (_readyCalls.length > 0) {
+			var func = _readyCalls.shift();
+			RESES.doAsync(func);
+		}
+		_readyCalls = null;
+	}
+
+	if (document.readyState !== "loading") {
+		documentReady();
+	} else {
+		window.addEventListener("DOMContentLoaded", documentReady);
+	}
+
 	RESES.extendType(RESES, {
 		onPreInit: function (method) {
 			if (_preinitCalls !== null) {
@@ -258,6 +308,13 @@ const RESES = window.RESES = {
 				RESES.debounceMethod(preinitialize);
 			} else {
 				throw new Error("Initialization already in progress. Too late to call onInit.");
+			}
+		},
+		onReady: function (method) {
+			if (_readyCalls !== null) {
+				_readyCalls.push(method);
+			} else {
+				RESES.doAsync(method);
 			}
 		}
 	});
@@ -412,4 +469,6 @@ RESES.extendType(DOMTokenList.prototype, {
 	}
 });
 
-if (unsafeWindow) { unsafeWindow.RESES = RESES; }
+if (unsafeWindow) {
+	unsafeWindow.RESES = RESES;
+}

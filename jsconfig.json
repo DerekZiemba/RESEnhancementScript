@@ -5,6 +5,7 @@
 	"compilerOptions": {
 		"target": "es6",
 		// "checkJs": true,
+		"lib": ["es5", "dom"],
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"module":"amd",

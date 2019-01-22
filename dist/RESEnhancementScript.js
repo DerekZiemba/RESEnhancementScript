@@ -204,72 +204,107 @@ const RESES = window.RESES = {
         return extendType;
     }()),
     Color: (function () {
-        function toHex(num, padding) { return num.toString(16).padStart(padding || 2); }
+        function toHex(num, padding) {
+            return num.toString(16).padStart(padding || 2);
+        }
         function parsePart(value) {
+            value = value.trim();
             var perc = value.lastIndexOf('%');
             return perc < 0 ? value : value.substr(0, perc);
         }
+        function normalizeComponent(value) {
+            value = parseInt(value);
+            if (value == null || isNaN(value)) {
+                return 0;
+            }
+            return value > 255 ? 255 : (value < 0 ? 0 : value);
+        }
         function Color(data) {
-            if (arguments.length > 1) {
-                this[0] = arguments[0];
-                this[1] = arguments[1];
-                this[2] = arguments[2];
-                if (arguments.length > 3) {
-                    this[3] = arguments[3];
-                }
-            }
-            else if (data instanceof Color || Array.isArray(data)) {
-                this[0] = data[0];
-                this[1] = data[1];
-                this[2] = data[2];
-                this[3] = data[3];
-            }
-            else if (typeof data === "string") {
-                data = data.trim();
-                if (data[0] === '#') {
-                    switch (data.length) {
-                        case 4:
-                            this[0] = parseInt(data[1], 16);
-                            this[0] = (this[0] << 4) | this[0];
-                            this[1] = parseInt(data[2], 16);
-                            this[1] = (this[1] << 4) | this[1];
-                            this[2] = parseInt(data[3], 16);
-                            this[2] = (this[2] << 4) | this[2];
-                            break;
-                        case 9:
-                            this[3] = parseInt(data.substr(7, 2), 16);
-                        case 7:
-                            this[0] = parseInt(data.substr(1, 2), 16);
-                            this[1] = parseInt(data.substr(3, 2), 16);
-                            this[2] = parseInt(data.substr(5, 2), 16);
-                            break;
+            this[0] = 255;
+            this[1] = 255;
+            this[2] = 255;
+            this[3] = 255;
+            if (!(data === undefined || data === null || isNaN(data))) {
+                if (arguments.length > 1) {
+                    this.r = arguments[0];
+                    this.g = arguments[1];
+                    this.b = arguments[2];
+                    if (arguments.length > 3) {
+                        this.a = arguments[3];
                     }
                 }
-                else if (data.startsWith("rgb")) {
-                    var parts = data.substr(data[3] === "a" ? 5 : 4, data.length - (data[3] === "a" ? 6 : 5)).split(',');
-                    this.r = parsePart(parts[0]);
-                    this.g = parsePart(parts[1]);
-                    this.b = parsePart(parts[2]);
-                    if (parts.length > 3) {
-                        this.a = parsePart(parts[3]);
+                else if (typeof data === 'string') {
+                    data = data.trim().toLowerCase();
+                    if (data[0] === '#') {
+                        switch (data.length) {
+                            case 9:
+                                this[3] = parseInt(data.substr(7, 2), 16);
+                            case 7:
+                                this[0] = parseInt(data.substr(1, 2), 16);
+                                this[1] = parseInt(data.substr(3, 2), 16);
+                                this[2] = parseInt(data.substr(5, 2), 16);
+                                break;
+                            case 4:
+                                this[0] = parseInt(data[1], 16);
+                                this[0] = (this[0] << 4) | this[0];
+                                this[1] = parseInt(data[2], 16);
+                                this[1] = (this[1] << 4) | this[1];
+                                this[2] = parseInt(data[3], 16);
+                                this[2] = (this[2] << 4) | this[2];
+                                break;
+                            default:
+                                throw new Error(`Invalid Hex Color: ${data}`);
+                        }
+                    }
+                    else if (data.startsWith("rgb")) {
+                        var parts = (data[3] === 'a' ? data.substr(5, data.length - 6) : data.substr(4, data.length - 5)).split(',');
+                        this.r = parsePart(parts[0]);
+                        this.g = parsePart(parts[1]);
+                        this.b = parsePart(parts[2]);
+                        if (parts.length > 3) {
+                            this.a = parsePart(parts[3]);
+                        }
+                    }
+                    else {
+                        throw new Error(`Invalid Color String: ${data}`);
+                    }
+                }
+                else if (data instanceof Color) {
+                    this[0] = data[0];
+                    this[1] = data[1];
+                    this[2] = data[2];
+                    this[3] = data[3];
+                }
+                else if (Array.isArray(data)) {
+                    this.r = data[0];
+                    this.g = data[1];
+                    this.b = data[2];
+                    if (data.length > 3) {
+                        this.a = data[3];
                     }
                 }
             }
         }
         Color.prototype = {
             constructor: Color,
-            0: 255,
-            1: 255,
-            2: 255,
-            3: 255,
+            get length() { return this[3] === 255 ? 3 : 4; },
             get r() { return this[0]; },
-            set r(value) { this[0] = value == null ? 0 : Math.max(Math.min(parseInt(value), 255), 0); },
+            set r(value) { this[0] = normalizeComponent(value); },
             get g() { return this[1]; },
-            set g(value) { this[1] = value == null ? 0 : Math.max(Math.min(parseInt(value), 255), 0); },
+            set g(value) { this[1] = normalizeComponent(value); },
             get b() { return this[2]; },
-            set b(value) { this[2] = value == null ? 0 : Math.max(Math.min(parseInt(value), 255), 0); },
+            set b(value) { this[2] = normalizeComponent(value); },
             get a() { return this[3] / 255; },
-            set a(value) { this[3] = value == null ? 255 : Math.max(Math.min(value > 1 ? value : parseFloat(value) * 255, 255), 0); },
+            set a(value) {
+                value = parseFloat(value);
+                if (!(value == null || isNaN(value))) {
+                    if (value < 1) {
+                        value = value * 255;
+                    }
+                    value = Math.floor(value);
+                    this[3] = value > 255 ? 255 : (value < 0 ? 0 : value);
+                }
+            },
             get luma() { return .299 * this.r + .587 * this.g + .114 * this.b; },
             get inverted() { return new Color(255 - this[0], 255 - this[1], 255 - this[2], this[3]); },
             toString: function (option) {
@@ -382,6 +417,7 @@ const RESES = window.RESES = {
 (function initListeners(window, document, RESES) {
     var _preinitCalls = [];
     var _initCalls = [];
+    var _readyCalls = [];
     function initialize() {
         while (_initCalls.length > 0) {
             var func = _initCalls.shift();
@@ -407,6 +443,19 @@ const RESES = window.RESES = {
             throw new Error("PreInit Already Executed");
         }
     }
+    function documentReady() {
+        while (_readyCalls.length > 0) {
+            var func = _readyCalls.shift();
+            RESES.doAsync(func);
+        }
+        _readyCalls = null;
+    }
+    if (document.readyState !== "loading") {
+        documentReady();
+    }
+    else {
+        window.addEventListener("DOMContentLoaded", documentReady);
+    }
     RESES.extendType(RESES, {
         onPreInit: function (method) {
             if (_preinitCalls !== null) {
@@ -424,6 +473,14 @@ const RESES = window.RESES = {
             }
             else {
                 throw new Error("Initialization already in progress. Too late to call onInit.");
+            }
+        },
+        onReady: function (method) {
+            if (_readyCalls !== null) {
+                _readyCalls.push(method);
+            }
+            else {
+                RESES.doAsync(method);
             }
         }
     });
@@ -644,7 +701,7 @@ RESES.extendType(RESES, {
 });
 RESES.filterData = {
     karmawhores: [
-        'SlimJones123', 'GallowBoob', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
+        'SlimJones123', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
         'KevlarYarmulke', 'D5R', 'dickfromaccounting', 'icant-chooseone'
     ].map(x => x && x.toLowerCase()),
     pornsubs: ["18_19", "2busty2hide", "60fpsporn", "aa_cups", "abelladanger", "adorableporn", "afrodisiac", "alathenia", "alexandradaddario",
@@ -772,14 +829,15 @@ RESES.filterData = {
         "fuckingmachines", "IShouldBuyABoat", "CosplayBoobs", "taboofans", "emogirls", "HighHeels", "AbusePorn2",
         "leannadecker", "asiangirlswhitecocks", "Pushing", "maturemilf", "Lordosis", "deathmetalgfclub",
         "WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
-        "mila_azul", "sex_comics"
+        "mila_azul", "sex_comics", "KateeOwen", "Hotwife"
     ].map(x => x && x.toLowerCase()),
     pornaccounts: [
         "lilmshotstuff", "Bl0ndeB0i", "Alathenia", "kinkylilkittyy", "Immediateunmber", "justsomegirlidk", "serenityjaneee",
         "Urdadstillwantsme", "therealtobywong", "sarah-xxx", "RubyLeClaire", "chickpeasyx", "rizzzzzy",
         "clarabelle_says", "Telari_Love", "purplehailstorm", "Peach_Legend", "NetflixandChillMe", "xrxse",
         "alomaXsteele", "BeaYork", "Littlebitdramatic", "fitchers_bird", "CalicoKitty19", "ILikeMakingPornGifs",
-        "FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413", "hastalapasta96"
+        "FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413", "hastalapasta96", "pumpkinbread717",
+        "Your_Little_Angel"
     ].map(x => x && x.toLowerCase()),
     animesubs: [
         "FireEmblemHeroes", "RWBY", "digimon", "Itasha", "Haruhi", "DragaliaLost", "awwnimate", "TokyoGhoul", "animenocontext",
@@ -795,14 +853,14 @@ RESES.filterData = {
         "FortniteFashion", "EstateofMomo", "CellsAtWork", "HighschoolDxD", "BokuNoShipAcademia", "Tsunderes",
         "ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
         "Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
-        "pouts", "MyHeroAcademia"
+        "pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz"
     ].map(x => x && x.toLowerCase()),
     annoyingflairs: [
         "Art", "Artwork", "FanArt", "Fan Art", "Fan Work"
     ].map(x => x && x.toLowerCase()),
     annoyingsubs: [
         "uglyduckling", "guineapigs", "Rats", "happy", "Blep", "tattoos", "forbiddensnacks", "PrequelMemes",
-        "BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig",
+        "BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig", "pitbulls",
         "drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
         "antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
         "sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies"
@@ -935,6 +993,8 @@ RESES.LinkListing = ((window) => {
             this.bIsPolitics = false;
             this.bIsShow = false;
             this.bIsGame = false;
+            this.post.onclick = null;
+            this.post.removeAttribute('onclick');
             this.setupPost();
         }
         get voteArrowDown() {
@@ -1111,12 +1171,12 @@ RESES.linkListingMgr = ((document) => {
             var adds = mutations[i].addedNodes;
             for (var k = 0, l2 = adds.length; k < l2; k++) {
                 var node = adds[k];
-                if (node.nodeType === 1 && node.id === 'siteTable') {
+                if (node.nodeType === 1 && node.classList.contains('sitetable')) {
                     _newLinkListings.push(node);
                 }
             }
         }
-        _processNewLinkListings();
+        RESES.debounceMethod(_processNewLinkListings);
     }
     RESES.onInit(() => {
         var linklistings = document.getElementsByClassName('linklisting');

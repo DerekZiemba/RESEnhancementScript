@@ -301,12 +301,12 @@ RESES.linkListingMgr = ((document) => {
 			var adds = mutations[i].addedNodes;
 			for (var k = 0, l2 = adds.length; k < l2; k++) {
 				var node = adds[k];
-				if (node.nodeType === 1 && node.id === 'siteTable') {
+				if (node.nodeType === 1 && node.classList.contains('sitetable')) {
 					_newLinkListings.push(node);
 				}
 			}
 		}
-		_processNewLinkListings();
+		RESES.debounceMethod(_processNewLinkListings);
 	}
 
 	RESES.onInit(() => {
@@ -334,3 +334,4 @@ RESES.linkListingMgr = ((document) => {
 	};
 
 })(window.document);
+
