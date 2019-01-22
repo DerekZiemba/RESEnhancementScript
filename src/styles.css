@@ -1,9 +1,4 @@
-"use strict";
 
-(function RESUS_styler(window, document){
-	const styleEl = document.createElement("style");
-
-	styleEl.innerHTML = `
 		.side, .listing-chooser .contents { display:none;};
 		.sb-track .side, .listing-chooser .sidebar .contents{display: block;}
 		.sb-on .sb-track .sb-sled {
@@ -107,9 +102,7 @@
 		.live-timestamp {
 			color: #898963 !important
 		}
-		.tagline {
-			color: #hsl(0, 0%, 53%) !important;
-		}
+
 		.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container, .res-nightmode.res-commentBoxes .comment.RES-keyNav-activeThing,
 		.child>.sitetable> .comment.RES-keyNav-activeThing,
 		.child>.sitetable>.comment > .child>.sitetable> .comment.RES-keyNav-activeThing,
@@ -140,18 +133,4 @@
 		.res-nightmode .flair, .res-nightmode .linkflairlabel {
 			color: white;
 		}
-
-		`;
-
-	function appendStyleEl() {
-		if (document.head) {
-			document.head.appendChild(styleEl);
-		} else {
-			setTimeout(appendStyleEl, 1);
-		}
-	}
-
-	appendStyleEl();
-
-}(window, window.document));
 

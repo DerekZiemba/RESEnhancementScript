@@ -1,5 +1,4 @@
 
-/// <reference path="styler.js" />
 /// <reference path="RESES.js" />
 /*global RESES */
 
@@ -8,8 +7,6 @@ RESES.addTabMenuButton = function addTabMenuButton(el) {
 	var tabbar = document.getElementsByClassName('tabmenu')[0];
 	if (tabbar) { tabbar.appendChild(el); }
 };
-
-
 
 RESES.btnFilterPost = ((window, document, RESES) => {
 	const btn = Element.From(`

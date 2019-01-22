@@ -5,7 +5,7 @@
 		"module":"amd",
 		"strict": true,
 		"lib": ["es5", "dom"],
-		"pretty": true,
+		"pretty": false,
 		"outFile": "dist/RESEnhancementScript.js",
 		"watch": true,
 		"allowJs": true,

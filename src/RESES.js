@@ -1,4 +1,3 @@
-/// <reference path="styler.js" />
 /*global unsafeWindow */ //for greasemonkey
 /*global DOMTokenList */
 
@@ -323,28 +322,28 @@ const RESES = window.RESES = {
 
 
 /**NOTE: Custom methods that are added to existing types are purposely capitalized. */
-RESES.extendType(Element, {
-	From: (function () {
-		 const doc = window.document;
-		 const rgx = /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g;
-		 return function CreateElementFromHTML(html) { //Almost 3x performance compared to jQuery and only marginally slower than manually creating element: https://jsbench.github.io/#02fe05ed4fdd9ff6582f364b01673425
-				var innerHtmlStart = html.indexOf('>') + 1;
-				var elemStart = html.substr(0, innerHtmlStart);
-				var match = rgx.exec(elemStart)[4];
-				var elem = doc.createElement(match);
-				while ((match = rgx.exec(elemStart)) !== null) {
-					 if (match[1] === undefined) {
-							elem.setAttribute(match[4], "");
-					 } else {
-							elem.setAttribute(match[1], match[3]);
-					 }
-				}
-				elem.innerHTML = html.substr(innerHtmlStart, html.lastIndexOf('<') - innerHtmlStart);
-				rgx.lastIndex = 0;
-				return elem;
-		 };
-	}())
-});
+// RESES.extendType(Element, {
+// 	From: (function () {
+// 		 const doc = window.document;
+// 		 const rgx = /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g;
+// 		 return function CreateElementFromHTML(html) { //Almost 3x performance compared to jQuery and only marginally slower than manually creating element: https://jsbench.github.io/#02fe05ed4fdd9ff6582f364b01673425
+// 				var innerHtmlStart = html.indexOf('>') + 1;
+// 				var elemStart = html.substr(0, innerHtmlStart);
+// 				var match = rgx.exec(elemStart)[4];
+// 				var elem = doc.createElement(match);
+// 				while ((match = rgx.exec(elemStart)) !== null) {
+// 					 if (match[1] === undefined) {
+// 							elem.setAttribute(match[4], "");
+// 					 } else {
+// 							elem.setAttribute(match[1], match[3]);
+// 					 }
+// 				}
+// 				elem.innerHTML = html.substr(innerHtmlStart, html.lastIndexOf('<') - innerHtmlStart);
+// 				rgx.lastIndex = 0;
+// 				return elem;
+// 		 };
+// 	}())
+// });
 
 
 RESES.extendType(String.prototype, {
@@ -469,6 +468,6 @@ RESES.extendType(DOMTokenList.prototype, {
 	}
 });
 
-if (unsafeWindow) {
-	unsafeWindow.RESES = RESES;
-}
+// if (unsafeWindow) {
+// 	unsafeWindow.RESES = RESES;
+// }

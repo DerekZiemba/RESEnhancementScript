@@ -190,7 +190,7 @@ RESES.filterData = {
 		"AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
 		"LateStageCapitalizm", "MarcheAgainstTrump", "MarchAgainstNazis", "Political_Revolution", "politics", "RussiaLago",
 		"ShitThe_DonaldSays", "The_Dotard", "Trumpgret", "PoliticalHumor", "The_Mueller", "SandersForPresident",
-		"EnoughTrumpSpam"
+		"EnoughTrumpSpam", "TrumpCriticizesTrump"
 	].map(x => x && x.toLowerCase())
 
 };

@@ -9,7 +9,7 @@
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
 		"module":"amd",
-		"pretty": true,
+		"pretty": false,
 		"outFile": "dist/RESEnhancementScript.js",
 		"watch": true,
 		"removeComments": true,
