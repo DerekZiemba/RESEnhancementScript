@@ -181,28 +181,6 @@ const RESES = window.RESES = {
 		return result;
 	},
 
-	elvis: function elvis(data, name) {
-		var path = name.split('.');
-		while (path.length > 0 && data != null) {
-			name = path.shift();
-			var bfunc = name.endsWith(')');
-			if (bfunc) {
-				let param = name.SubstrAfter('(').SubstrBefore(')');
-				if (param === name) { param = null; }
-				name = name.SubstrBefore('(');
-				data = param ? data[name](param) : data[name]();
-			} else {
-				if (name.indexOf('=') >= 0) {
-					data[name.SubstrBefore('=')] = name.SubstrAfter('=');
-					return data;
-				} else {
-					data = data[name];
-				}
-			}
-		}
-		return data;
-	},
-
 	/** requestAnimationFrame doesn't work when the tab is in the background. This ensures the operation will happen regardless. */
 	doAsync: function doAsync(func) {
 		if (document.hidden) {
@@ -459,14 +437,6 @@ RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
 });
 
 
-RESES.extendType(DOMTokenList.prototype, {
-	ContainsAny: function () {
-		for (var i = 0, len = arguments.length; i < len; i++) {
-			if (this.contains(arguments[i])){ return true; }
-		}
-		return false;
-	}
-});
 
 // if (unsafeWindow) {
 // 	unsafeWindow.RESES = RESES;

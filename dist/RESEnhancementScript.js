@@ -198,31 +198,6 @@ const RESES = window.RESES = {
         document.body.removeChild(iframe);
         return result;
     },
-    elvis: function elvis(data, name) {
-        var path = name.split('.');
-        while (path.length > 0 && data != null) {
-            name = path.shift();
-            var bfunc = name.endsWith(')');
-            if (bfunc) {
-                let param = name.SubstrAfter('(').SubstrBefore(')');
-                if (param === name) {
-                    param = null;
-                }
-                name = name.SubstrBefore('(');
-                data = param ? data[name](param) : data[name]();
-            }
-            else {
-                if (name.indexOf('=') >= 0) {
-                    data[name.SubstrBefore('=')] = name.SubstrAfter('=');
-                    return data;
-                }
-                else {
-                    data = data[name];
-                }
-            }
-        }
-        return data;
-    },
     doAsync: function doAsync(func) {
         if (document.hidden) {
             window.setTimeout(func, 0);
@@ -479,20 +454,10 @@ RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
         }
     }
 });
-RESES.extendType(DOMTokenList.prototype, {
-    ContainsAny: function () {
-        for (var i = 0, len = arguments.length; i < len; i++) {
-            if (this.contains(arguments[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-});
 RESES.extendType(RESES, {
     bIsCommentPage: window.location.pathname.includes('/comments/'),
     bIsUserPage: window.location.pathname.includes('/user/'),
-    subreddit: RESES.elvis(/^\/(?:r\/(\w+)\/)/.exec(window.location.pathname), '1.toLowerCase()'),
+    subreddit: (() => { var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname); return m[1] ? m[1].toLocaleLowerCase() : null; })(),
     get bIsMultireddit() {
         delete this.bIsMultireddit;
         return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
@@ -822,100 +787,105 @@ RESES.LinkListing = ((window) => {
     const wmArrowDown = new WeakMap();
     class LinkListing {
         constructor(post) {
-            this.post = post;
-            this.expandoboxObserver = null;
-            this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
-            this.midcol = post.getElementsByClassName('midcol')[0] || null;
-            this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
-            this.flairLabel = post.getElementsByClassName('linkflairlabel')[0] || null;
-            this.cls = post.classList;
-            this.mcls = this.midcol !== null ? this.midcol.classList : null;
-            var ds = post.dataset;
-            this.flairLabelText = (this.flairLabel !== null && this.flairLabel.title.toLowerCase()) || null;
-            this.url = ds.url || null;
-            this.subreddit = ds.subreddit || null;
-            this.author = ds.author || null;
-            this.timestamp = Number(ds.timestamp);
-            this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
-            this.bIsRepost = false;
-            this.bIsBlockedURL = false;
-            this.bIsKarmaWhore = false;
-            this.bIsPorn = false;
-            this.bIsAnime = false;
-            this.bIsAnnoying = false;
-            this.bIsPolitics = false;
-            this.bIsShow = false;
-            this.bIsGame = false;
-            this.updateThumbnail = () => _updateThumbnail(this);
-            this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
-            this.cls.add('zregistered');
-            if (this.flairLabel) {
-                RESES.doAsync(() => _adjustFlairColor(this));
+            {
+                post.ll = this;
+                this.post = post;
+                this.expandoboxObserver = null;
+                this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
+                this.midcol = post.getElementsByClassName('midcol')[0] || null;
+                this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
+                this.flairLabel = post.getElementsByClassName('linkflairlabel')[0] || null;
+                this.cls = post.classList;
+                this.mcls = this.midcol !== null ? this.midcol.classList : null;
+                var ds = post.dataset;
+                this.flairLabelText = (this.flairLabel !== null && this.flairLabel.title.toLowerCase()) || null;
+                this.url = ds.url || null;
+                this.subreddit = ds.subreddit || null;
+                this.author = ds.author || null;
+                this.timestamp = Number(ds.timestamp);
+                this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
+                this.bIsRepost = false;
+                this.bIsBlockedURL = false;
+                this.bIsKarmaWhore = false;
+                this.bIsPorn = false;
+                this.bIsAnime = false;
+                this.bIsAnnoying = false;
+                this.bIsPolitics = false;
+                this.bIsShow = false;
+                this.bIsGame = false;
+                this.updateThumbnail = () => _updateThumbnail(this);
+                this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
+                this.cls.add('zregistered');
             }
-            if (this.midcol !== null) {
-                this.midcol.addEventListener('click', this.handleVoteClick);
-            }
-            if (this.url !== null) {
-                this.url = _getHostAndPath(this.url);
-                if (this.url.length > 0) {
-                    this.bIsBlockedURL = checkIfBlockedUrl(this.url);
-                    this.bIsRepost = registerLinkListing(this);
+            {
+                if (this.flairLabel) {
+                    RESES.doAsync(() => _adjustFlairColor(this));
                 }
-            }
-            if (this.subreddit !== null) {
-                this.subreddit = _sanitizeSubreddit(this.subreddit);
-                if (!this.bIsTextPost) {
-                    this.bIsPorn = filterData.pornsubs.includes(this.subreddit) || filterData.pornaccounts.includes(this.subreddit);
+                if (this.midcol !== null) {
+                    this.midcol.addEventListener('click', this.handleVoteClick);
                 }
-                this.bIsAnime = filterData.animesubs.includes(this.subreddit);
-                this.bIsAnnoying = filterData.annoyingsubs.includes(this.subreddit);
-                this.bIsShow = filterData.shows.includes(this.subreddit);
-                this.bIsGame = filterData.games.includes(this.subreddit);
-                this.bIsPolitics = filterData.politics.includes(this.subreddit);
-            }
-            if (this.author !== null) {
-                this.author = this.author.toLowerCase();
-                this.bIsKarmaWhore = filterData.karmawhores.includes(this.author);
-                if (!this.bIsTextPost) {
-                    this.bIsPorn = this.bIsPorn || filterData.pornaccounts.includes(this.author);
+                if (this.url !== null) {
+                    this.url = _getHostAndPath(this.url);
+                    if (this.url.length > 0) {
+                        this.bIsBlockedURL = checkIfBlockedUrl(this.url);
+                        this.bIsRepost = registerLinkListing(this);
+                    }
                 }
-            }
-            if (this.flairLabelText !== null) {
-                this.bisAnnoying = this.bIsAnnoying || filterData.annoyingflairs.includes(this.flairLabelText);
-            }
-            if (this.bIsRepost) {
-                this.cls.add('isrepost');
-            }
-            if (this.bIsBlockedURL) {
-                this.cls.add('isblockedurl');
-            }
-            if (this.bIsPorn) {
-                this.cls.add('isporn');
-            }
-            if (this.bIsAnime) {
-                this.cls.add('isanime');
-            }
-            if (this.bIsKarmaWhore) {
-                this.cls.add('iskarmawhore');
-            }
-            if (this.bIsAnnoying) {
-                this.cls.add('isannoying');
-            }
-            if (this.bIsShow) {
-                this.cls.add('isshow');
-            }
-            if (this.bIsGame) {
-                this.cls.add('isgame');
-            }
-            if (this.bIsPolitics) {
-                this.cls.add('ispolitics');
-            }
-            if (this.shouldBeDownvoted) {
-                this.autoDownvotePost();
-            }
-            if (this.expandobox !== null) {
-                this.expandoboxObserver = new MutationObserver(this.updateThumbnail);
-                this.expandoboxObserver.observe(this.expandobox, { attributes: true });
+                if (this.subreddit !== null) {
+                    this.subreddit = _sanitizeSubreddit(this.subreddit);
+                    if (!this.bIsTextPost) {
+                        this.bIsPorn = filterData.pornsubs.includes(this.subreddit) || filterData.pornaccounts.includes(this.subreddit);
+                    }
+                    this.bIsAnime = filterData.animesubs.includes(this.subreddit);
+                    this.bIsAnnoying = filterData.annoyingsubs.includes(this.subreddit);
+                    this.bIsShow = filterData.shows.includes(this.subreddit);
+                    this.bIsGame = filterData.games.includes(this.subreddit);
+                    this.bIsPolitics = filterData.politics.includes(this.subreddit);
+                }
+                if (this.author !== null) {
+                    this.author = this.author.toLowerCase();
+                    this.bIsKarmaWhore = filterData.karmawhores.includes(this.author);
+                    if (!this.bIsTextPost) {
+                        this.bIsPorn = this.bIsPorn || filterData.pornaccounts.includes(this.author);
+                    }
+                }
+                if (!this.bisAnnoying && this.flairLabelText !== null) {
+                    this.bisAnnoying = filterData.annoyingflairs.includes(this.flairLabelText);
+                }
+                if (this.bIsRepost) {
+                    this.cls.add('isrepost');
+                }
+                if (this.bIsBlockedURL) {
+                    this.cls.add('isblockedurl');
+                }
+                if (this.bIsPorn) {
+                    this.cls.add('isporn');
+                }
+                if (this.bIsAnime) {
+                    this.cls.add('isanime');
+                }
+                if (this.bIsKarmaWhore) {
+                    this.cls.add('iskarmawhore');
+                }
+                if (this.bIsAnnoying) {
+                    this.cls.add('isannoying');
+                }
+                if (this.bIsShow) {
+                    this.cls.add('isshow');
+                }
+                if (this.bIsGame) {
+                    this.cls.add('isgame');
+                }
+                if (this.bIsPolitics) {
+                    this.cls.add('ispolitics');
+                }
+                if (this.shouldBeDownvoted) {
+                    this.autoDownvotePost();
+                }
+                if (this.expandobox !== null) {
+                    this.expandoboxObserver = new MutationObserver(this.updateThumbnail);
+                    this.expandoboxObserver.observe(this.expandobox, { attributes: true });
+                }
             }
             this.updateThumbnail();
         }
