@@ -5,7 +5,10 @@
 RESES.extendType(RESES, {
 	bIsCommentPage: window.location.pathname.includes('/comments/'),
 	bIsUserPage: window.location.pathname.includes('/user/'),
-	subreddit: (() => { var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname); return m[1] ? m[1].toLocaleLowerCase() : null;  })(),
+	subreddit: (() => {
+		var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname);
+		return m && m[1] ? m[1].toLocaleLowerCase() : null;
+	})(),
 	get bIsMultireddit() {
 		delete this.bIsMultireddit;
 		return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
