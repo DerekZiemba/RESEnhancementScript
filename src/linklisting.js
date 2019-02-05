@@ -60,8 +60,9 @@ RESES.linkRegistry = (() => {
 
 })();
 
-
+RESES.posts = [];
 RESES.LinkListing = ((window) => {
+
 	function _updateThumbnail(post) {
 		if (post.thumbnail) { post.thumbnail.style.display = post.isExpanded ? 'none' : ''; }
 	}
@@ -113,11 +114,10 @@ RESES.LinkListing = ((window) => {
 	const checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
 	const registerLinkListing = RESES.linkRegistry.registerLinkListing;
 	const wmArrowDown = new WeakMap();
-
 	class LinkListing {
 		constructor(post) {
+			RESES.posts.push(this);
 			{ //Setup
-				post.ll = this;
 				this.post = post;
 				this.expandoboxObserver = null;
 
@@ -270,7 +270,6 @@ RESES.LinkListing = ((window) => {
 			}
 		}
 	}
-
 
 	return LinkListing;
 })(window);

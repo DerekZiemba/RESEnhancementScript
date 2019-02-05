@@ -4,7 +4,7 @@
 		"target": "ES6",
 		"module":"amd",
 		"strict": true,
-		"lib": ["es5", "dom"],
+		"lib": ["es6", "es5", "dom"],
 		"pretty": false,
 		"outFile": "dist/RESEnhancementScript.js",
 		"watch": true,

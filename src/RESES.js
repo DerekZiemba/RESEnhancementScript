@@ -6,48 +6,42 @@
 
 const RESES = window.RESES = {
 	extendType: (function () {
-		const defProp = Object.defineProperty;
-		const assign = Object.assign;
-
-		function defineOne(proto, name, prop, options, obj) {
-			if (name in proto) {
-				if (options.override) {
-					defProp(proto, name, prop);
-				} else if (options.merge) {
-					var target = proto[name];
-					var src = obj[name];
-					extendType(target, src, options);
-				}
-			} else {
-				defProp(proto, name, prop);
-			}
-		}
-		function defineSeveral(proto, name, prop, options, obj) {
-			for (var i = 0, len = proto.length; i < len; i++) {
-				defineOne(proto[i], name, prop, options, obj);
-			}
-		}
-
-		function extendType(proto, obj, options) { //jshint ignore:line
-			if (!options) { options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false }; }
-			var define = proto instanceof Array ? defineSeveral : defineOne;
-			var descriptors = Object.getOwnPropertyDescriptors(obj);
-
-			for (var name in descriptors) {
-				var opts = options.hasOwnProperty(name) ? assign({}, options, options[name]) : options;
-				var prop = descriptors[name];
-
-				prop.enumerable = opts.enumerable ? true : false;
-				if (opts.configurable === false) { prop.configurable = false; } else if (opts.configurable === true) { prop.configurable = true; }
-				if ('value' in prop) {
-					if (opts.writable === false) { prop.writable = false; } else if (opts.writable === true) { prop.writable = true; }
-				}
-
-				define(proto, name, prop, opts, obj);
-			}
-		}
-		return extendType;
-	}()),
+    function defineOne(proto, name, prop, options, obj) {
+      if (name in proto) {
+        if (options.override) {
+          Object.defineProperty(proto, name, prop);
+        } else if (options.merge) {
+          extendType(proto[name], obj[name], options);
+        }
+      } else {
+        Object.defineProperty(proto, name, prop);
+      }
+    }
+    function defineSeveral(proto, name, prop, options, obj) {
+      for (var i = 0, len = proto.length; i < len; i++) { defineOne(proto[i], name, prop, options, obj); }
+    }
+    /**@param {object} options - How to extend.
+     * enumerable, configurable, writable are standards: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+     * @param {bool} options.override - Overwrites existing property/function if duplicates
+     * @param {bool} options.merge - If duplicate property/function/Type, merges the prototype of each into one.
+     */
+    function extendType(proto, obj, options) { //jshint ignore:line
+      if (!options) { options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false }; }
+      var define = proto instanceof Array ? defineSeveral : defineOne;
+      var descriptors = Object.getOwnPropertyDescriptors(obj);
+      for (var name in descriptors) {
+        var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
+        var prop = descriptors[name];
+        prop.enumerable = opts.enumerable ? true : false;
+        if (opts.configurable === false) { prop.configurable = false; } else if (opts.configurable === true) { prop.configurable = true; }
+        if ('value' in prop) {
+          if (opts.writable === false) { prop.writable = false; } else if (opts.writable === true) { prop.writable = true; }
+        }
+        define(proto, name, prop, opts, obj);
+      }
+    }
+    return extendType;
+  }()),
 
 	Color: (function () {
 		function toHex(num, padding) {
@@ -161,7 +155,7 @@ const RESES = window.RESES = {
 					}
 				}
 			}
-		};
+    };
 		return Color;
 	}()),
 
