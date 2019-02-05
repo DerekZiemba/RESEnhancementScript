@@ -1,18 +1,5 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var RESES = window.RESES = {
+const RESES = window.RESES = {
     extendType: (function () {
         function defineOne(proto, name, prop, options, obj) {
             if (name in proto) {
@@ -34,27 +21,22 @@ var RESES = window.RESES = {
         }
         function extendType(proto, obj, options) {
             if (!options) {
-                options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false };
+                options = { enumerable: undefined, configurable: undefined, writable: undefined, override: true, merge: false };
             }
             var define = proto instanceof Array ? defineSeveral : defineOne;
-            var descriptors = Object.getOwnPropertyDescriptors(obj);
-            for (var name in descriptors) {
+            var keys = Object.keys(obj);
+            for (var i = 0, len = keys.length; i < len; i++) {
+                var name = keys[i];
                 var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
-                var prop = descriptors[name];
-                prop.enumerable = opts.enumerable ? true : false;
-                if (opts.configurable === false) {
-                    prop.configurable = false;
+                var prop = Object.getOwnPropertyDescriptor(obj, name);
+                if (opts.enumerable != null) {
+                    prop.enumerable = opts.enumerable;
                 }
-                else if (opts.configurable === true) {
-                    prop.configurable = true;
+                if (opts.configurable != null) {
+                    prop.configurable = opts.configurable;
                 }
-                if ('value' in prop) {
-                    if (opts.writable === false) {
-                        prop.writable = false;
-                    }
-                    else if (opts.writable === true) {
-                        prop.writable = true;
-                    }
+                if (opts.writable != null && 'value' in prop) {
+                    prop.writable = opts.writable;
                 }
                 define(proto, name, prop, opts, obj);
             }
@@ -111,7 +93,7 @@ var RESES = window.RESES = {
                                 this[2] = (this[2] << 4) | this[2];
                                 break;
                             default:
-                                throw new Error("Invalid Hex Color: " + data);
+                                throw new Error(`Invalid Hex Color: ${data}`);
                         }
                     }
                     else if (data.startsWith("rgb")) {
@@ -124,7 +106,7 @@ var RESES = window.RESES = {
                         }
                     }
                     else {
-                        throw new Error("Invalid Color String: " + data);
+                        throw new Error(`Invalid Color String: ${data}`);
                     }
                 }
                 else if (data instanceof Color) {
@@ -171,164 +153,22 @@ var RESES = window.RESES = {
                 }
                 else if (option === '%') {
                     if (this.a !== 1) {
-                        return "rgba(" + this.r / 255 * 100 + "%, " + this.b / 255 * 100 + "%, " + this.g / 255 * 100 + "%, " + this.a / 255 + ")";
+                        return `rgba(${this.r / 255 * 100}%, ${this.b / 255 * 100}%, ${this.g / 255 * 100}%, ${this.a / 255})`;
                     }
                     else {
-                        return "rgb(" + this.r / 255 * 100 + "%, " + this.b / 255 * 100 + "%, " + this.g / 255 * 100 + ")%";
+                        return `rgb(${this.r / 255 * 100}%, ${this.b / 255 * 100}%, ${this.g / 255 * 100})%`;
                     }
                 }
                 else {
                     if (this.a !== 1) {
-                        return "rgba(" + this.r + ", " + this.b + ", " + this.g + ", " + this.a + ")";
+                        return `rgba(${this.r}, ${this.b}, ${this.g}, ${this.a})`;
                     }
                     else {
-                        return "rgb(" + this.r + ", " + this.b + ", " + this.g + ")";
+                        return `rgb(${this.r}, ${this.b}, ${this.g})`;
                     }
                 }
             }
         };
-        var DCol = (function (_super) {
-            __extends(DCol, _super);
-            function DCol(data) {
-                var _this = _super.call(this, data) || this;
-                _this.x = 0;
-                _this.val = "ok";
-                return _this;
-            }
-            Object.defineProperty(DCol.prototype, "randomgetter", {
-                get: function () { return this.val; },
-                set: function (val) { this.val = val; },
-                enumerable: true,
-                configurable: true
-            });
-            DCol.prototype.doaction = function () { return false; };
-            Object.defineProperty(DCol.prototype, "voteArrowDown", {
-                get: function () {
-                    var arrow = null;
-                    if (this.midcol !== null) {
-                        arrow = wmArrowDown.get(this);
-                        if (!arrow) {
-                            arrow = this.midcol.getElementsByClassName('arrow')[1] || null;
-                            wmArrowDown.set(arrow);
-                        }
-                    }
-                    return arrow;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "age", {
-                get: function () { return Date.now() - this.timestamp; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "ageHours", {
-                get: function () { return this.age / 3600000; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "ageDays", {
-                get: function () { return this.age / 86400000; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isUpvoted", {
-                get: function () { return this.mcls === null ? false : this.mcls.contains("likes"); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isDownvoted", {
-                get: function () { return this.mcls === null ? false : this.mcls.contains("dislikes"); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isUnvoted", {
-                get: function () { return this.mcls === null ? false : this.mcls.contains("unvoted"); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isExpanded", {
-                get: function () {
-                    var expando = this.expandobox;
-                    if (expando !== null) {
-                        return expando.dataset.cachedhtml ? expando.style.display !== 'none' : expando.getAttribute('hidden') === null;
-                    }
-                    return false;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isCrosspost", {
-                get: function () { return parseInt(this.post.dataset.numCrossposts) > 0; },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isNSFW", {
-                get: function () { return this.cls.contains('over18'); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isFilteredByRES", {
-                get: function () { return this.cls.contains('RESFiltered'); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "isAutoDownvoted", {
-                get: function () { return this.cls.contains('autodownvoted'); },
-                set: function (bool) { this.cls.toggle('autodownvoted', bool); },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "bMatchesFilter", {
-                get: function () {
-                    return this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying || this.bIsPolitics || this.bIsShow || this.bIsGame;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            Object.defineProperty(DCol.prototype, "shouldBeDownvoted", {
-                get: function () {
-                    return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
-                },
-                enumerable: true,
-                configurable: true
-            });
-            DCol.prototype.autoDownvotePost = function () {
-                var _this = this;
-                var cfg = RESES.config;
-                if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted && this.ageDays < 30 && this.voteArrowDown !== null) {
-                    if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
-                        this.isAutoDownvoted = true;
-                        RESES.doAsync(function () { return _this.voteArrowDown.click(); });
-                    }
-                    if (this.expandobox) {
-                        this.expandobox.hidden = true;
-                    }
-                }
-            };
-            DCol.prototype.removeAutoDownvote = function () {
-                var _this = this;
-                if (this.voteArrowDown && this.isDownvoted && this.isAutoDownvoted) {
-                    this.isAutoDownvoted = false;
-                    RESES.doAsync(function () { return _this.voteArrowDown.click(); });
-                    if (this.expandobox) {
-                        this.expandobox.hidden = false;
-                    }
-                }
-            };
-            DCol.prototype.canDrop = function (aI, aO) { return false; };
-            DCol.prototype.cycleCell = function (aR, aC) { return; };
-            DCol.prototype.getColumnProperties = function (aCID, aC) { return; };
-            DCol.prototype.getImageSrc = function (aR, aC) { return null; };
-            DCol.prototype.getLevel = function (aR) { return 0; };
-            DCol.prototype.getParentIndex = function (aRI) { return -1; };
-            DCol.prototype.getProgressMode = function (aR, aC) { return 3; };
-            DCol.prototype.isContainer = function (aR) { return false; };
-            DCol.prototype.isEditable = function (aR, aC) { return aC.editable; };
-            DCol.prototype.isSeparator = function (aR) { return false; };
-            DCol.prototype.isSorted = function () { return (this.sort_col != null); };
-            return DCol;
-        }(Color));
         return Color;
     }()),
     getNonStandardWindowProperties: function getNonStandardWindowProperties(win, bAsArray) {
@@ -342,9 +182,9 @@ var RESES = window.RESES = {
         var iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         document.body.appendChild(iframe);
-        var result = Object.getOwnPropertyNames(win).filter(function (name) { return !iframe.contentWindow.hasOwnProperty(name); });
+        var result = Object.getOwnPropertyNames(win).filter(name => !iframe.contentWindow.hasOwnProperty(name));
         if (!bAsArray) {
-            result = result.reduce(function (dict, name) { dict[name] = win[name]; return dict; }, {});
+            result = result.reduce((dict, name) => { dict[name] = win[name]; return dict; }, {});
         }
         document.body.removeChild(iframe);
         return result;
@@ -357,26 +197,25 @@ var RESES = window.RESES = {
             window.requestAnimationFrame(func);
         }
     },
-    debounceMethod: (function () {
-        var wm = new WeakMap();
-        var Operation = (function () {
-            function Operation(method) {
-                this.func = function () {
+    debounceMethod: (() => {
+        const wm = new WeakMap();
+        class Operation {
+            constructor(method) {
+                this.func = () => {
                     method();
                     wm.delete(method);
                 };
                 this.timer = 0 | 0;
                 this.hidden = false;
             }
-            Operation.prototype.cancel = function () {
+            cancel() {
                 this.hidden === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer);
-            };
-            Operation.prototype.start = function () {
+            }
+            start() {
                 this.hidden = document.hidden;
                 this.timer = this.hidden === true ? window.setTimeout(this.func, 0) : window.requestAnimationFrame(this.func);
-            };
-            return Operation;
-        }());
+            }
+        }
         return function debounceMethod(method) {
             var op = wm.get(method);
             if (op !== undefined) {
@@ -466,9 +305,9 @@ RESES.extendType(String.prototype, {
         return this.split(sequence).join(value);
     },
     Trim: (function () {
-        var rgxBoth = /^\s+|\s+$/g;
-        var rgxStart = /^\s+/;
-        var rgxEnd = /\s+$/;
+        const rgxBoth = /^\s+|\s+$/g;
+        const rgxStart = /^\s+/;
+        const rgxEnd = /\s+$/;
         function whitespaceTrim(str, option) {
             if ((option & 3) === 3) {
                 return str.replace(rgxBoth, '');
@@ -568,7 +407,7 @@ RESES.extendType(String.prototype, {
 });
 RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
     Remove: (function () {
-        var matches = Element.prototype.matches;
+        const matches = Element.prototype.matches;
         function Remove(selector) {
             var i = 0, len = 0;
             if (selector == null) {
@@ -609,13 +448,16 @@ RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
 RESES.extendType(RESES, {
     bIsCommentPage: window.location.pathname.includes('/comments/'),
     bIsUserPage: window.location.pathname.includes('/user/'),
-    subreddit: (function () { var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname); return m[1] ? m[1].toLocaleLowerCase() : null; })(),
+    subreddit: (() => {
+        var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname);
+        return m && m[1] ? m[1].toLocaleLowerCase() : null;
+    })(),
     get bIsMultireddit() {
         delete this.bIsMultireddit;
         return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
     },
     config: (function localSettings() {
-        var cache = {};
+        const cache = {};
         function getSetting(key, _default) {
             if (cache[key] !== undefined) {
                 return cache[key];
@@ -643,7 +485,7 @@ RESES.filterData = {
     karmawhores: [
         'SlimJones123', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
         'KevlarYarmulke', 'D5R', 'dickfromaccounting', 'icant-chooseone'
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     pornsubs: ["18_19", "2busty2hide", "60fpsporn", "aa_cups", "abelladanger", "adorableporn", "afrodisiac", "alathenia", "alexandradaddario",
         "alteredbuttholes", "altgonewild", "alwaystheshyones", "amateur", "amateurcumsluts", "amateurgirlsbigcocks", "anacheriexclusive", "anal_gifs",
         "angelawhite", "angievaronalegal", "animebooty", "animegifs", "animemidriff", "animemilfs", "animewallpaper", "anna_faith", "araragi", "arielwinter",
@@ -770,7 +612,7 @@ RESES.filterData = {
         "leannadecker", "asiangirlswhitecocks", "Pushing", "maturemilf", "Lordosis", "deathmetalgfclub",
         "WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
         "mila_azul", "sex_comics", "KateeOwen", "Hotwife"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     pornaccounts: [
         "lilmshotstuff", "Bl0ndeB0i", "Alathenia", "kinkylilkittyy", "Immediateunmber", "justsomegirlidk", "serenityjaneee",
         "Urdadstillwantsme", "therealtobywong", "sarah-xxx", "RubyLeClaire", "chickpeasyx", "rizzzzzy",
@@ -778,7 +620,7 @@ RESES.filterData = {
         "alomaXsteele", "BeaYork", "Littlebitdramatic", "fitchers_bird", "CalicoKitty19", "ILikeMakingPornGifs",
         "FreshBeaver", "liz_103", "CalicoKitty19", "petitenudist413", "hastalapasta96", "pumpkinbread717",
         "Your_Little_Angel"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     animesubs: [
         "FireEmblemHeroes", "RWBY", "digimon", "Itasha", "Haruhi", "DragaliaLost", "awwnimate", "TokyoGhoul", "animenocontext",
         "TheTempleOfOchako", "senrankagura", "furry_irl", "GoblinSlayer", "ImaginaryWarhammer", "characterdrawing",
@@ -794,35 +636,35 @@ RESES.filterData = {
         "ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
         "Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
         "pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     annoyingflairs: [
         "Art", "Artwork", "FanArt", "Fan Art", "Fan Work"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     annoyingsubs: [
         "uglyduckling", "guineapigs", "Rats", "happy", "Blep", "tattoos", "forbiddensnacks", "PrequelMemes",
         "BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig", "pitbulls",
         "drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
         "antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
         "sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     shows: [
         "TheSimpsons"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     games: [
         "deadbydaylight", "smashbros", "DestinyTheGame", "destiny2", "Warframe", "NintendoSwitch", "Warhammer40k", "PathOfExile",
         "zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR"
-    ].map(function (x) { return x && x.toLowerCase(); }),
+    ].map(x => x && x.toLowerCase()),
     politics: [
         "AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
         "LateStageCapitalizm", "MarcheAgainstTrump", "MarchAgainstNazis", "Political_Revolution", "politics", "RussiaLago",
         "ShitThe_DonaldSays", "The_Dotard", "Trumpgret", "PoliticalHumor", "The_Mueller", "SandersForPresident",
         "EnoughTrumpSpam", "TrumpCriticizesTrump"
-    ].map(function (x) { return x && x.toLowerCase(); })
+    ].map(x => x && x.toLowerCase())
 };
-RESES.linkRegistry = (function () {
-    var _links = {};
+RESES.linkRegistry = (() => {
+    const _links = {};
     var _blockedUrlsCache = null;
-    var LinkRegistry = {
+    const LinkRegistry = {
         get links() {
             return _links;
         },
@@ -875,7 +717,8 @@ RESES.linkRegistry = (function () {
     };
     return LinkRegistry;
 })();
-RESES.LinkListing = (function (window) {
+RESES.posts = [];
+RESES.LinkListing = ((window) => {
     function _updateThumbnail(post) {
         if (post.thumbnail) {
             post.thumbnail.style.display = post.isExpanded ? 'none' : '';
@@ -908,7 +751,7 @@ RESES.LinkListing = (function (window) {
         }
     }
     function _getHostAndPath(url) {
-        var end = url.indexOf('?');
+        let end = url.indexOf('?');
         if (end < 0) {
             end = url.indexOf('#');
         }
@@ -918,7 +761,7 @@ RESES.LinkListing = (function (window) {
         if (url[end - 1] === '/') {
             end--;
         }
-        var start = url.indexOf('www.') + 4;
+        let start = url.indexOf('www.') + 4;
         if (start < 4) {
             start = url.indexOf('//') + 2;
         }
@@ -933,23 +776,17 @@ RESES.LinkListing = (function (window) {
         }
         return subreddit.toLowerCase();
     }
-    var filterData = RESES.filterData;
-    var checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
-    var registerLinkListing = RESES.linkRegistry.registerLinkListing;
-    var wmArrowDown = new WeakMap();
-    var LinkListing = (function () {
-        function LinkListing(post) {
-            var _this = this;
+    const filterData = RESES.filterData;
+    const checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
+    const registerLinkListing = RESES.linkRegistry.registerLinkListing;
+    class LinkListing {
+        constructor(post) {
             {
-                post.ll = this;
                 this.post = post;
                 this.expandoboxObserver = null;
                 this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
                 this.midcol = post.getElementsByClassName('midcol')[0] || null;
-                this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
                 this.flairLabel = post.getElementsByClassName('linkflairlabel')[0] || null;
-                this.cls = post.classList;
-                this.mcls = this.midcol !== null ? this.midcol.classList : null;
                 var ds = post.dataset;
                 this.flairLabelText = (this.flairLabel !== null && this.flairLabel.title.toLowerCase()) || null;
                 this.url = ds.url || null;
@@ -966,13 +803,13 @@ RESES.LinkListing = (function (window) {
                 this.bIsPolitics = false;
                 this.bIsShow = false;
                 this.bIsGame = false;
-                this.updateThumbnail = function () { return _updateThumbnail(_this); };
-                this.handleVoteClick = function (ev) { return _handleVoteClick(_this, ev); };
+                this.updateThumbnail = () => _updateThumbnail(this);
+                this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
                 this.cls.add('zregistered');
             }
             {
                 if (this.flairLabel) {
-                    RESES.doAsync(function () { return _adjustFlairColor(_this); });
+                    RESES.doAsync(() => _adjustFlairColor(this));
                 }
                 if (this.midcol !== null) {
                     this.midcol.addEventListener('click', this.handleVoteClick);
@@ -1042,128 +879,73 @@ RESES.LinkListing = (function (window) {
             }
             this.updateThumbnail();
         }
-        Object.defineProperty(LinkListing.prototype, "voteArrowDown", {
-            get: function () {
-                var arrow = null;
-                if (this.midcol !== null) {
-                    arrow = wmArrowDown.get(this);
-                    if (!arrow) {
-                        arrow = this.midcol.getElementsByClassName('arrow')[1] || null;
-                        wmArrowDown.set(arrow);
-                    }
-                }
-                return arrow;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "age", {
-            get: function () { return Date.now() - this.timestamp; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "ageHours", {
-            get: function () { return this.age / 3600000; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "ageDays", {
-            get: function () { return this.age / 86400000; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isUpvoted", {
-            get: function () { return this.mcls === null ? false : this.mcls.contains("likes"); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isDownvoted", {
-            get: function () { return this.mcls === null ? false : this.mcls.contains("dislikes"); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isUnvoted", {
-            get: function () { return this.mcls === null ? false : this.mcls.contains("unvoted"); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isExpanded", {
-            get: function () {
-                var expando = this.expandobox;
-                if (expando !== null) {
-                    return expando.dataset.cachedhtml ? expando.style.display !== 'none' : expando.getAttribute('hidden') === null;
-                }
-                return false;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isCrosspost", {
-            get: function () { return parseInt(this.post.dataset.numCrossposts) > 0; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isNSFW", {
-            get: function () { return this.cls.contains('over18'); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isFilteredByRES", {
-            get: function () { return this.cls.contains('RESFiltered'); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "isAutoDownvoted", {
-            get: function () { return this.cls.contains('autodownvoted'); },
-            set: function (bool) { this.cls.toggle('autodownvoted', bool); },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "bMatchesFilter", {
-            get: function () {
-                return this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying || this.bIsPolitics || this.bIsShow || this.bIsGame;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(LinkListing.prototype, "shouldBeDownvoted", {
-            get: function () {
-                return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        LinkListing.prototype.autoDownvotePost = function () {
-            var _this = this;
+        get expandobox() {
+            var expando = this.post.getElementsByClassName('res-expando-box')[0] || this.post.getElementsByClassName('expando')[0] || null;
+            if (expando !== null) {
+                Object.defineProperty(this, 'expandobox', { value: expando });
+            }
+            return expando;
+        }
+        get voteArrowDown() {
+            var arrow = this.midcol && this.midcol.getElementsByClassName('arrow')[1] || null;
+            if (arrow !== null) {
+                Object.defineProperty(this, 'voteArrowDown', { value: arrow });
+            }
+            return arrow;
+        }
+        get cls() { return this.post.classList; }
+        get age() { return Date.now() - this.timestamp; }
+        get ageHours() { return this.age / 3600000; }
+        get ageDays() { return this.age / 86400000; }
+        get isUpvoted() { return this.midcol === null ? false : this.midcol.classList.contains("likes"); }
+        get isDownvoted() { return this.midcol === null ? false : this.midcol.classList.contains("dislikes"); }
+        get isUnvoted() { return this.midcol === null ? false : this.midcol.classList.contains("unvoted"); }
+        get isExpanded() {
+            var expando = this.expandobox;
+            if (expando !== null) {
+                return expando.dataset.cachedhtml ? expando.style.display !== 'none' : expando.getAttribute('hidden') === null;
+            }
+            return false;
+        }
+        get isCrosspost() { return parseInt(this.post.dataset.numCrossposts) > 0; }
+        get isNSFW() { return this.cls.contains('over18'); }
+        get isFilteredByRES() { return this.cls.contains('RESFiltered'); }
+        get isAutoDownvoted() { return this.cls.contains('autodownvoted'); }
+        set isAutoDownvoted(bool) { this.cls.toggle('autodownvoted', bool); }
+        get bMatchesFilter() {
+            return this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying || this.bIsPolitics || this.bIsShow || this.bIsGame;
+        }
+        get shouldBeDownvoted() {
+            return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
+        }
+        autoDownvotePost() {
             var cfg = RESES.config;
             if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted && this.ageDays < 30 && this.voteArrowDown !== null) {
                 if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
                     this.isAutoDownvoted = true;
-                    RESES.doAsync(function () { return _this.voteArrowDown.click(); });
+                    RESES.doAsync(() => this.voteArrowDown.click());
                 }
                 if (this.expandobox) {
                     this.expandobox.hidden = true;
                 }
             }
-        };
-        LinkListing.prototype.removeAutoDownvote = function () {
-            var _this = this;
+        }
+        removeAutoDownvote() {
             if (this.voteArrowDown && this.isDownvoted && this.isAutoDownvoted) {
                 this.isAutoDownvoted = false;
-                RESES.doAsync(function () { return _this.voteArrowDown.click(); });
+                RESES.doAsync(() => this.voteArrowDown.click());
                 if (this.expandobox) {
                     this.expandobox.hidden = false;
                 }
             }
-        };
-        return LinkListing;
-    }());
+        }
+    }
     return LinkListing;
 })(window);
-RESES.linkListingMgr = (function (document) {
-    var LinkListing = RESES.LinkListing;
-    var _newLinkListings = [];
-    var _listingCollection = Array(1000);
+RESES.linkListingMgr = ((document) => {
+    const LinkListing = RESES.LinkListing;
+    const _newLinkListings = [];
+    const _listingCollection = Array(1000);
     _listingCollection.index = 0;
     var linklistingObserver = null;
     function _updateLinkListings() {
@@ -1180,7 +962,7 @@ RESES.linkListingMgr = (function (document) {
                 good++;
             }
         }
-        RESES.btnFilterPost.update({ good: good, filtered: filtered, shit: shit });
+        RESES.btnFilterPost.update({ good, filtered, shit });
     }
     function _processNewLinkListings() {
         console.time("ProcessNewLinkListings");
@@ -1210,7 +992,7 @@ RESES.linkListingMgr = (function (document) {
         }
         RESES.debounceMethod(_processNewLinkListings);
     }
-    RESES.onInit(function () {
+    RESES.onInit(() => {
         var linklistings = document.getElementsByClassName('linklisting');
         var root = linklistings[0];
         if (root) {
@@ -1222,7 +1004,7 @@ RESES.linkListingMgr = (function (document) {
             _processNewLinkListings();
             var showimages = document.getElementsByClassName('res-show-images')[0];
             if (showimages) {
-                showimages.addEventListener('click', function () {
+                showimages.addEventListener('click', () => {
                     RESES.doAsync(_updateLinkListings);
                 });
             }
@@ -1233,7 +1015,7 @@ RESES.linkListingMgr = (function (document) {
         updateLinkListings: _updateLinkListings
     };
 })(window.document);
-RESES.ScrollingSidebar = (function (window, document, RESES) {
+RESES.ScrollingSidebar = ((window, document, RESES) => {
     function _toggleSidebar(ss, bState) {
         var cls = ss.el.classList;
         cls.add('sb-init');
@@ -1277,15 +1059,18 @@ RESES.ScrollingSidebar = (function (window, document, RESES) {
             RESES.doAsync(ss.handleScroll);
         }
     }
-    var ScrollingSidebar = (function () {
-        function ScrollingSidebar(id, cbStateChange) {
-            var _this = this;
+    class ScrollingSidebar {
+        constructor(id, cbStateChange) {
             this.id = id;
             this.cbStateChange = cbStateChange;
-            this.handleScrollGuarded = function () { return _handleScrollGuarded(_this); };
-            this.handleScroll = function () { return _handleScroll(_this); };
-            this.toggleSidebar = function (bool) { RESES.doAsync(function () { _toggleSidebar(_this, bool); }); };
-            this.el = Element.From("\n\t\t\t\t<div id='" + id + "' class='sidebar'>\n\t\t\t\t\t<div class='sb-handle'></div>\n\t\t\t\t\t<div class='sb-track'></div>\n\t\t\t\t</div>");
+            this.handleScrollGuarded = () => _handleScrollGuarded(this);
+            this.handleScroll = () => _handleScroll(this);
+            this.toggleSidebar = (bool) => { RESES.doAsync(() => { _toggleSidebar(this, bool); }); };
+            this.el = Element.From(`
+				<div id='${id}' class='sidebar'>
+					<div class='sb-handle'></div>
+					<div class='sb-track'></div>
+				</div>`);
             this.handle = this.el.firstElementChild;
             this.track = this.el.lastElementChild;
             this.sled = null;
@@ -1295,8 +1080,7 @@ RESES.ScrollingSidebar = (function (window, document, RESES) {
             this.bGuard = false;
             this.bShowing = true;
         }
-        ScrollingSidebar.prototype.init = function (target) {
-            var _this = this;
+        init(target) {
             if (!target) {
                 return;
             }
@@ -1305,15 +1089,14 @@ RESES.ScrollingSidebar = (function (window, document, RESES) {
             this.sled = parent.removeChild(target);
             this.sled.classList.add('sb-sled');
             this.track.append(this.sled);
-            this.handle.addEventListener('click', function () { return _this.toggleSidebar(); });
+            this.handle.addEventListener('click', () => this.toggleSidebar());
             window.addEventListener('scroll', this.handleScrollGuarded);
             this.toggleSidebar(false);
-        };
-        return ScrollingSidebar;
-    }());
+        }
+    }
     return ScrollingSidebar;
 })(window, window.document, window.RESES);
-RESES.sideBarMgr = (function (window, document, RESES) {
+RESES.sideBarMgr = ((window, document, RESES) => {
     var ssleft, ssright;
     function _update() {
         var style = {};
@@ -1325,11 +1108,11 @@ RESES.sideBarMgr = (function (window, document, RESES) {
         }
         document.querySelectorAll('.content[role=main], .footer-parent').CSS(style);
     }
-    RESES.onPreInit(function () {
+    RESES.onPreInit(() => {
         ssleft = new RESES.ScrollingSidebar('sbLeft', _update);
         ssright = new RESES.ScrollingSidebar('sbRight', _update);
     });
-    RESES.onInit(function () {
+    RESES.onInit(() => {
         document.querySelectorAll('.listing-chooser .grippy').Remove();
         ssleft.init(document.querySelector('.listing-chooser .contents'));
         ssright.init(document.getElementsByClassName('side')[0]);
@@ -1346,9 +1129,47 @@ RESES.addTabMenuButton = function addTabMenuButton(el) {
         tabbar.appendChild(el);
     }
 };
-RESES.btnFilterPost = (function (window, document, RESES) {
-    var btn = Element.From("\n\t\t<li>\n\t\t\t<style type=\"text/css\" scoped>\n\t\t\t\tbody.goodthings #filtermode .goodthings {\tcolor: lightgreen;\t}\n\t\t\t\tbody.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {\tcolor: tomato;\t}\n\t\t\t\t#btnDropdown { position:relative; display: inline-block; }\n\t\t\t\t#btnDropdown:hover .dropdown-content {display: block;}\n\t\t\t\t#btnDropdown:hover .dropbtn {background-color: #3e8e41;}\n\t\t\t\t.dropdown-content { display:none; position: absolute; min-width: 160px; z-index:10; margin-top 5px; background-color: rgb(50, 50, 50); }\n\t\t\t\tul.dropdown-content li, ul.dropdown-content li a {\n\t\t\t\t\tdisplay: block; margin: 2px; min-width: 160px; padding: 5px; background-color: rgb(50, 50, 50);\n\t\t\t\t\tcursor: pointer;\n\t\t\t\t}\n\t\t\t\tul.dropdown-content li:hover { background-color: rgb(70, 70, 70); }\n\t\t\t\tul.dropdown-content li:hover a { background-color: rgb(70, 70, 70); color: lightgreen; }\n\t\t\t\tul.dropdown-content.downvotingenabled li.downvotingdisabled { display: none; }\n\t\t\t\tul.dropdown-content.downvotingdisabled li.downvotingenabled { display: none; }\n\t\t\t</style>\n\t\t\t<div id=\"btnDropdown\">\n\t\t\t\t<a id=\"filtermode\" href=\"#2\">\n\t\t\t\t\t<span class='goodpost'>GoodPosts(<span></span>)</span>&nbsp-&nbsp\n\t\t\t\t\t<span class='filteredpost'>Filtered(<span></span>)</span>&nbsp-&nbsp\n\t\t\t\t\t<span class='shitpost'>Downvoted(<span></span>)</span>\n\t\t\t\t</a>\n\t\t\t\t<ul class='dropdown-content'>\n\t\t\t\t\t<li><a id=\"downvoteFiltered\"><span>Downvote all filtered content</span></a></li>\n\t\t\t\t\t<li><a id=\"removeDownvotes\"><span>Remove Auto Downvotes</span></a></li>\n\n\t\t\t\t\t<li class='downvotingdisabled'><a id=\"enableAutoDownvoting\"><span>Enable Auto Downvoting</span></a></li>\n\t\t\t\t\t<li class='downvotingenabled'><a id=\"disableAutoDownvoting\"><span>Disable Auto Downvoting</span></a></li>\n\n\t\t\t\t\t<li class='downvotingenabled'><a id=\"enableFilterDownvoting\"><span>Enable Filter Based Downvoting</span></a></li>\n\t\t\t\t\t<li class='downvotingenabled'><a id=\"disableFilterDownvoting\"><span>Disable Filter Based Downvoting</span></a></li>\n\n\t\t\t\t\t<li class='downvotingenabled'><a id=\"enableRepostDownvoting\"><span>Enable Repost Downvoting</span></a></li>\n\t\t\t\t\t<li class='downvotingenabled'><a id=\"disableRepostDownvoting\"><span>Disable Repost Downvoting</span></a></li>\n\t\t\t\t</ul>\n\t\t\t</div>\n\t\t</li>");
-    btn.querySelector('#filtermode').addEventListener('click', function () {
+RESES.btnFilterPost = ((window, document, RESES) => {
+    const btn = Element.From(`
+		<li>
+			<style type="text/css" scoped>
+				body.goodthings #filtermode .goodthings {	color: lightgreen;	}
+				body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {	color: tomato;	}
+				#btnDropdown { position:relative; display: inline-block; }
+				#btnDropdown:hover .dropdown-content {display: block;}
+				#btnDropdown:hover .dropbtn {background-color: #3e8e41;}
+				.dropdown-content { display:none; position: absolute; min-width: 160px; z-index:10; margin-top 5px; background-color: rgb(50, 50, 50); }
+				ul.dropdown-content li, ul.dropdown-content li a {
+					display: block; margin: 2px; min-width: 160px; padding: 5px; background-color: rgb(50, 50, 50);
+					cursor: pointer;
+				}
+				ul.dropdown-content li:hover { background-color: rgb(70, 70, 70); }
+				ul.dropdown-content li:hover a { background-color: rgb(70, 70, 70); color: lightgreen; }
+				ul.dropdown-content.downvotingenabled li.downvotingdisabled { display: none; }
+				ul.dropdown-content.downvotingdisabled li.downvotingenabled { display: none; }
+			</style>
+			<div id="btnDropdown">
+				<a id="filtermode" href="#2">
+					<span class='goodpost'>GoodPosts(<span></span>)</span>&nbsp-&nbsp
+					<span class='filteredpost'>Filtered(<span></span>)</span>&nbsp-&nbsp
+					<span class='shitpost'>Downvoted(<span></span>)</span>
+				</a>
+				<ul class='dropdown-content'>
+					<li><a id="downvoteFiltered"><span>Downvote all filtered content</span></a></li>
+					<li><a id="removeDownvotes"><span>Remove Auto Downvotes</span></a></li>
+
+					<li class='downvotingdisabled'><a id="enableAutoDownvoting"><span>Enable Auto Downvoting</span></a></li>
+					<li class='downvotingenabled'><a id="disableAutoDownvoting"><span>Disable Auto Downvoting</span></a></li>
+
+					<li class='downvotingenabled'><a id="enableFilterDownvoting"><span>Enable Filter Based Downvoting</span></a></li>
+					<li class='downvotingenabled'><a id="disableFilterDownvoting"><span>Disable Filter Based Downvoting</span></a></li>
+
+					<li class='downvotingenabled'><a id="enableRepostDownvoting"><span>Enable Repost Downvoting</span></a></li>
+					<li class='downvotingenabled'><a id="disableRepostDownvoting"><span>Disable Repost Downvoting</span></a></li>
+				</ul>
+			</div>
+		</li>`);
+    btn.querySelector('#filtermode').addEventListener('click', () => {
         var cls = document.body.classList;
         if (cls.contains('goodpost')) {
             cls.replace('goodpost', 'filteredpost');
@@ -1361,56 +1182,56 @@ RESES.btnFilterPost = (function (window, document, RESES) {
         }
         RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
     });
-    btn.querySelector('#downvoteFiltered').addEventListener('click', function () {
-        RESES.linkListingMgr.listingCollection.forEach(function (post) {
+    btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
+        RESES.linkListingMgr.listingCollection.forEach((post) => {
             if (post.isFilteredByRES) {
                 post.autoDownvotePost();
             }
         });
         RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
     });
-    btn.querySelector('#removeDownvotes').addEventListener('click', function () {
-        RESES.linkListingMgr.listingCollection.forEach(function (post) {
+    btn.querySelector('#removeDownvotes').addEventListener('click', () => {
+        RESES.linkListingMgr.listingCollection.forEach((post) => {
             post.removeAutoDownvote();
         });
         RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
     });
-    var elDropdownContent = btn.querySelector('.dropdown-content');
-    btn.querySelector('#enableAutoDownvoting').addEventListener('click', function () {
+    const elDropdownContent = btn.querySelector('.dropdown-content');
+    btn.querySelector('#enableAutoDownvoting').addEventListener('click', () => {
         RESES.config.bAutoDownvoting = true;
         elDropdownContent.classList.remove('downvotingdisabled');
         elDropdownContent.classList.add('downvotingenabled');
     });
-    btn.querySelector('#disableAutoDownvoting').addEventListener('click', function () {
+    btn.querySelector('#disableAutoDownvoting').addEventListener('click', () => {
         RESES.config.bAutoDownvoting = false;
         elDropdownContent.classList.remove('downvotingenabled');
         elDropdownContent.classList.add('downvotingdisabled');
     });
-    var elEnableFilterDownvoting = btn.querySelector('#enableFilterDownvoting');
-    var elDisableFilterDownvoting = btn.querySelector('#disableFilterDownvoting');
-    elEnableFilterDownvoting.addEventListener('click', function () {
+    const elEnableFilterDownvoting = btn.querySelector('#enableFilterDownvoting');
+    const elDisableFilterDownvoting = btn.querySelector('#disableFilterDownvoting');
+    elEnableFilterDownvoting.addEventListener('click', () => {
         RESES.config.bFilterDownvoting = true;
         elEnableFilterDownvoting.parentElement.style.display = 'none';
         elDisableFilterDownvoting.parentElement.style.display = 'block';
     });
-    elDisableFilterDownvoting.addEventListener('click', function () {
+    elDisableFilterDownvoting.addEventListener('click', () => {
         RESES.config.bFilterDownvoting = false;
         elEnableFilterDownvoting.parentElement.style.display = 'block';
         elDisableFilterDownvoting.parentElement.style.display = 'none';
     });
-    var elEnableRepostDownvoting = btn.querySelector('#enableRepostDownvoting');
-    var elDisableRepostDownvoting = btn.querySelector('#disableRepostDownvoting');
-    elEnableRepostDownvoting.addEventListener('click', function () {
+    const elEnableRepostDownvoting = btn.querySelector('#enableRepostDownvoting');
+    const elDisableRepostDownvoting = btn.querySelector('#disableRepostDownvoting');
+    elEnableRepostDownvoting.addEventListener('click', () => {
         RESES.config.bRepostDownvoting = true;
         elEnableRepostDownvoting.parentElement.style.display = 'none';
         elDisableRepostDownvoting.parentElement.style.display = 'block';
     });
-    elDisableRepostDownvoting.addEventListener('click', function () {
+    elDisableRepostDownvoting.addEventListener('click', () => {
         RESES.config.bRepostDownvoting = false;
         elEnableRepostDownvoting.parentElement.style.display = 'block';
         elDisableRepostDownvoting.parentElement.style.display = 'none';
     });
-    RESES.onPreInit(function () {
+    RESES.onPreInit(() => {
         elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
         if (RESES.config.bFilterDownvoting) {
             elEnableFilterDownvoting.parentElement.style.display = 'none';
@@ -1425,15 +1246,15 @@ RESES.btnFilterPost = (function (window, document, RESES) {
             elDisableRepostDownvoting.parentElement.style.display = 'none';
         }
     });
-    RESES.onInit(function () {
+    RESES.onInit(() => {
         if (!RESES.bIsCommentPage && !RESES.bIsUserPage) {
             document.body.classList.add('goodpost');
             RESES.addTabMenuButton(btn);
         }
     });
-    var elGoodposts = btn.querySelector('.goodpost span');
-    var elFilteredposts = btn.querySelector('.filteredpost span');
-    var elShitposts = btn.querySelector('.shitpost span');
+    const elGoodposts = btn.querySelector('.goodpost span');
+    const elFilteredposts = btn.querySelector('.filteredpost span');
+    const elShitposts = btn.querySelector('.shitpost span');
     return {
         get btn() { return btn; },
         update: function (counters) {
@@ -1443,9 +1264,9 @@ RESES.btnFilterPost = (function (window, document, RESES) {
         }
     };
 })(window, window.document, window.RESES);
-RESES.btnLoadAllComments = (function (window, document, RESES) {
+RESES.btnLoadAllComments = ((window, document, RESES) => {
     var arr = null, coms = null, scrollX = 0, scrollY = 0, bGuard = false;
-    var btn = Element.From("<li><a id=\"loadAllComments\" href=\"#3\"/a><span>Load All Comments</span></li>");
+    const btn = Element.From(`<li><a id="loadAllComments" href="#3"/a><span>Load All Comments</span></li>`);
     function doClick() {
         if (arr.length > 0 && bGuard === false) {
             bGuard = true;
@@ -1475,7 +1296,7 @@ RESES.btnLoadAllComments = (function (window, document, RESES) {
         doClick();
     }
     btn.addEventListener('click', handleClick);
-    RESES.onInit(function () {
+    RESES.onInit(() => {
         if (RESES.bIsCommentPage) {
             RESES.addTabMenuButton(btn);
         }

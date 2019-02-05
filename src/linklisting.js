@@ -113,21 +113,17 @@ RESES.LinkListing = ((window) => {
 	const filterData = RESES.filterData;
 	const checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
 	const registerLinkListing = RESES.linkRegistry.registerLinkListing;
-	const wmArrowDown = new WeakMap();
+	const wm = new WeakMap();
 	class LinkListing {
 		constructor(post) {
-			RESES.posts.push(this);
+			// RESES.posts.push(this);
 			{ //Setup
 				this.post = post;
 				this.expandoboxObserver = null;
 
 				this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
 				this.midcol = post.getElementsByClassName('midcol')[0] || null;
-				this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
 				this.flairLabel = post.getElementsByClassName('linkflairlabel')[0] || null;
-
-				this.cls = post.classList;
-				this.mcls = this.midcol !== null ? this.midcol.classList : null;
 
 				var ds = post.dataset;
 				this.flairLabelText = (this.flairLabel !== null && this.flairLabel.title.toLowerCase()) || null;
@@ -215,23 +211,32 @@ RESES.LinkListing = ((window) => {
 			}
 			this.updateThumbnail();
 		}
+		get expandobox() {
+			var item = wm.get(this);
+			if (!item) {
+				item = this.post.getElementsByClassName('res-expando-box')[0] || this.post.getElementsByClassName('expando')[0] || null;
+				item && wm.set(this, item);
+			}
+			return item;
+		}
 		get voteArrowDown() {
-			var arrow = null;
+			var item = null;
 			if (this.midcol !== null) {
-				arrow = wmArrowDown.get(this);
-				if (!arrow) {
-					arrow = this.midcol.getElementsByClassName('arrow')[1] || null;
-					wmArrowDown.set(arrow);
+				item = wm.get(this.midcol);
+				if (!item) {
+					item = this.midcol.getElementsByClassName('arrow')[1] || null;
+					item && wm.set(this.midcol, item);
 				}
 			}
-			return arrow;
+			return item;
 		}
+		get cls() { return this.post.classList; }
 		get age() { return Date.now() - this.timestamp; }
 		get ageHours() { return this.age / 3600000; }
 		get ageDays() { return this.age / 86400000; }
-		get isUpvoted() { return this.mcls === null ? false : this.mcls.contains("likes"); }
-		get isDownvoted() { return this.mcls === null ? false : this.mcls.contains("dislikes"); }
-		get isUnvoted() { return this.mcls === null ? false : this.mcls.contains("unvoted"); }
+		get isUpvoted() { return this.midcol === null ? false : this.midcol.classList.contains("likes"); }
+		get isDownvoted() { return this.midcol === null ? false : this.midcol.classList.contains("dislikes"); }
+		get isUnvoted() { return this.midcol === null ? false : this.midcol.classList.contains("unvoted"); }
 		get isExpanded() {
 			var expando = this.expandobox;
 			if (expando !== null) {

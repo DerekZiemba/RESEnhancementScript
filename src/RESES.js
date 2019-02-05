@@ -26,19 +26,18 @@ const RESES = window.RESES = {
      * @param {bool} options.merge - If duplicate property/function/Type, merges the prototype of each into one.
      */
     function extendType(proto, obj, options) { //jshint ignore:line
-      if (!options) { options = { enumerable: false, configurable: undefined, writable: undefined, override: true, merge: false }; }
+      if (!options) { options = { enumerable: undefined, configurable: undefined, writable: undefined, override: true, merge: false }; }
       var define = proto instanceof Array ? defineSeveral : defineOne;
-      var descriptors = Object.getOwnPropertyDescriptors(obj);
-      for (var name in descriptors) {
-        var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
-        var prop = descriptors[name];
-        prop.enumerable = opts.enumerable ? true : false;
-        if (opts.configurable === false) { prop.configurable = false; } else if (opts.configurable === true) { prop.configurable = true; }
-        if ('value' in prop) {
-          if (opts.writable === false) { prop.writable = false; } else if (opts.writable === true) { prop.writable = true; }
-        }
-        define(proto, name, prop, opts, obj);
-      }
+			var keys = Object.keys(obj);
+			for (var i = 0, len = keys.length; i < len; i++) {
+				var name = keys[i];
+				var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
+				var prop = Object.getOwnPropertyDescriptor(obj, name);
+				if (opts.enumerable != null) { prop.enumerable = opts.enumerable; }
+				if (opts.configurable != null) { prop.configurable = opts.configurable; }
+				if (opts.writable != null && 'value' in prop) { prop.writable = opts.writable; }
+				define(proto, name, prop, opts, obj);
+			}
     }
     return extendType;
   }()),
