@@ -267,8 +267,8 @@ const RESES = window.RESES = {
         this.map.delete(op.key);
         if (!this.longest || op.elapsedTotal > this.longest.elapsedTotal) { this.longest = op; }
         if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) { this.currentLongest = op; }
-        if (this.map.size === 0 && this.elapsed > 5) {
-          console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms`, this);
+        if (this.peek !== 0 && this.map.size === 0 && this.elapsed > 5) {
+          console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms. Peak: ${this.peak}. Total: ${this.total}`, this);
         }
         if (this.map.size === 0) {
           this.peak = 0;
@@ -281,37 +281,38 @@ const RESES = window.RESES = {
         op.tick();
         return op;
       }
-      debounce(method) {
+      debounce(method, delay) {
         var op = this.map.get(method);
         if (op !== undefined) {
           op.cancel();
         } else {
-          op = new AsyncOp(this, method, 0, method);
+          op = new AsyncOp(this, method, delay, method);
           this.track(op);
         }
         op.begin();
       }
     }
 
+    AsyncCtx.default = new AsyncCtx("Default");
     AsyncCtx.AsyncOp = AsyncOp;
     return AsyncCtx;
-  })()
+  })(),
+  doAsync: function defaultDoAsync(func, delay = 0) {
+    return RESES.AsyncCtx.default.doAsync(func, delay);
+  },
+  debounce: function defaultDebounce(method, delay) {
+    return RESES.AsyncCtx.default.debounce(method, delay);
+  }
 };
 
-(function() {
-  let context = new RESES.AsyncCtx("Default");
-  RESES.doAsync = function defaultDoAsync(func, delay = 0) {
-    return context.doAsync(func, delay);
-  };
-  RESES.debounceMethod = function defaultDebounceMethod(method) {
-    return context.debounce(method);
-  }
-})();
 
 (function initListeners(RESES) {
-  let context = new RESES.AsyncCtx("Initializer");
+  let context = RESES.AsyncCtx.default; //new RESES.AsyncCtx("Initializer");
 	var _initCalls = [];
-	var _readyCalls = [];
+  var _readyCalls = [];
+  var _loadedCalls = [];
+
+  window.addEventListener("load", windowLoaded);
 
   if (document.readyState !== "loading") {
     console.info("RESES loaded during weird document state.", document.readyState);
@@ -348,7 +349,23 @@ const RESES = window.RESES = {
       }
     }
 		_readyCalls = null;
-	}
+  }
+
+  function windowLoaded() {
+    if (_readyCalls !== null) {
+      RESES.onReady(windowLoaded, 1000);
+    } else {
+      if (_loadedCalls !== null) {
+        _loadedCalls.sort(comparer);
+        while (_loadedCalls.length > 0) {
+          let call = _loadedCalls.shift();
+          let func = call.method;
+          context.doAsync(func);
+        }
+        _loadedCalls = null;
+      }
+    }
+  }
 
   RESES.onInit = function (method, priority = 100) {
     if (_initCalls !== null) {
@@ -361,6 +378,13 @@ const RESES = window.RESES = {
   RESES.onReady = function (method, priority = 100) {
     if (_readyCalls !== null) {
       _readyCalls.push({ priority, method });
+    } else {
+      context.doAsync(method);
+    }
+  };
+  RESES.onLoaded = function (method, priority = 100) {
+    if (_loadedCalls !== null) {
+      _loadedCalls.push({ priority, method });
     } else {
       context.doAsync(method);
     }

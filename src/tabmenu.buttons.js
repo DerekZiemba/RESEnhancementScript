@@ -58,7 +58,7 @@ RESES.btnFilterPost = (() => {
 		} else if (cls.contains('shitpost')) {
 			cls.replace('shitpost', 'goodpost');
 		}
-		RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
 	});
 
 	btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
@@ -67,14 +67,14 @@ RESES.btnFilterPost = (() => {
         RESES.doAsync(() => post.autoDownvotePost());
 			}
 		});
-		RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
 	});
 
 	btn.querySelector('#removeDownvotes').addEventListener('click', () => {
     RESES.linkListingMgr.listingCollection.forEach((post) => {
       RESES.doAsync(() => post.removeAutoDownvote());
 		});
-		RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
 	});
 
 	const elDropdownContent = btn.querySelector('.dropdown-content');
@@ -138,7 +138,7 @@ RESES.btnFilterPost = (() => {
   }
 
 	RESES.onInit(tabMenuInit, -10);
-	RESES.onReady(tabMenuReady, -10);
+	RESES.onLoaded(tabMenuReady, -10);
 
 	const elGoodposts = btn.querySelector('.goodpost span');
 	const elFilteredposts = btn.querySelector('.filteredpost span');

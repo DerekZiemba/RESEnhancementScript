@@ -1,5 +1,3 @@
-/** Paste the following into greasemoneky or tampermonkey to use. */
-
 // ==UserScript==
 // @name         RESEnhancementScript
 // @version      1.0.3
@@ -8,8 +6,8 @@
 // @include        *://*.reddit.*/*
 // @noframes
 // @run-at		document-start
-// @require     https://raw.githubusercontent.com/DerekZiemba/RESEnhancementScript/master/dist/RESEnhancementScript.js
-// @resource    customCSS https://raw.githubusercontent.com/DerekZiemba/RESEnhancementScript/master/src/styles.css
+// @require     https://localhost/.js/RESEnhancementScript/dist/RESEnhancementScript.js
+// @resource    customCSS https://localhost/.js/RESEnhancementScript/src/styles.css
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 

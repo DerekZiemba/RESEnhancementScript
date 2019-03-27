@@ -283,8 +283,8 @@ const RESES = window.RESES = {
                 if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) {
                     this.currentLongest = op;
                 }
-                if (this.map.size === 0 && this.elapsed > 5) {
-                    console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms`, this);
+                if (this.peek !== 0 && this.map.size === 0 && this.elapsed > 5) {
+                    console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms. Peak: ${this.peak}. Total: ${this.total}`, this);
                 }
                 if (this.map.size === 0) {
                     this.peak = 0;
@@ -297,35 +297,35 @@ const RESES = window.RESES = {
                 op.tick();
                 return op;
             }
-            debounce(method) {
+            debounce(method, delay) {
                 var op = this.map.get(method);
                 if (op !== undefined) {
                     op.cancel();
                 }
                 else {
-                    op = new AsyncOp(this, method, 0, method);
+                    op = new AsyncOp(this, method, delay, method);
                     this.track(op);
                 }
                 op.begin();
             }
         }
+        AsyncCtx.default = new AsyncCtx("Default");
         AsyncCtx.AsyncOp = AsyncOp;
         return AsyncCtx;
-    })()
+    })(),
+    doAsync: function defaultDoAsync(func, delay = 0) {
+        return RESES.AsyncCtx.default.doAsync(func, delay);
+    },
+    debounce: function defaultDebounce(method, delay) {
+        return RESES.AsyncCtx.default.debounce(method, delay);
+    }
 };
-(function () {
-    let context = new RESES.AsyncCtx("Default");
-    RESES.doAsync = function defaultDoAsync(func, delay = 0) {
-        return context.doAsync(func, delay);
-    };
-    RESES.debounceMethod = function defaultDebounceMethod(method) {
-        return context.debounce(method);
-    };
-})();
 (function initListeners(RESES) {
-    let context = new RESES.AsyncCtx("Initializer");
+    let context = RESES.AsyncCtx.default;
     var _initCalls = [];
     var _readyCalls = [];
+    var _loadedCalls = [];
+    window.addEventListener("load", windowLoaded);
     if (document.readyState !== "loading") {
         console.info("RESES loaded during weird document state.", document.readyState);
         RESES.doAsync(documentReady);
@@ -361,6 +361,22 @@ const RESES = window.RESES = {
         }
         _readyCalls = null;
     }
+    function windowLoaded() {
+        if (_readyCalls !== null) {
+            RESES.onReady(windowLoaded, 1000);
+        }
+        else {
+            if (_loadedCalls !== null) {
+                _loadedCalls.sort(comparer);
+                while (_loadedCalls.length > 0) {
+                    let call = _loadedCalls.shift();
+                    let func = call.method;
+                    context.doAsync(func);
+                }
+                _loadedCalls = null;
+            }
+        }
+    }
     RESES.onInit = function (method, priority = 100) {
         if (_initCalls !== null) {
             _initCalls.push({ priority, method });
@@ -373,6 +389,14 @@ const RESES = window.RESES = {
     RESES.onReady = function (method, priority = 100) {
         if (_readyCalls !== null) {
             _readyCalls.push({ priority, method });
+        }
+        else {
+            context.doAsync(method);
+        }
+    };
+    RESES.onLoaded = function (method, priority = 100) {
+        if (_loadedCalls !== null) {
+            _loadedCalls.push({ priority, method });
         }
         else {
             context.doAsync(method);
@@ -814,7 +838,10 @@ RESES.LinkListing = (() => {
         if (ev.target === post.voteArrowDown) {
             if (!post.isDownvoted) {
                 if (post.isExpanded) {
-                    post.post.getElementsByClassName('expando-button')[0].click();
+                    let btn = post.post.getElementsByClassName('expando-button')[0];
+                    if (btn) {
+                        btn.click();
+                    }
                 }
                 if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
                     RESES.linkRegistry.addBlockedUrl(post.url);
@@ -827,7 +854,7 @@ RESES.LinkListing = (() => {
             }
             post.bPending = false;
         }
-        RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+        RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     }
     function _adjustFlairColor(post) {
         var style = window.getComputedStyle(post.flairLabel);
@@ -1086,7 +1113,7 @@ RESES.linkListingMgr = (() => {
             }
             linklisting = _newLinkListings.pop();
         }
-        RESES.debounceMethod(_updateLinkListings);
+        RESES.debounce(_updateLinkListings);
         console.timeEnd("ProcessNewLinkListings");
     }
     function _handleLinkListingMutation(mutations) {
@@ -1099,7 +1126,7 @@ RESES.linkListingMgr = (() => {
                 }
             }
         }
-        RESES.debounceMethod(_processNewLinkListings);
+        RESES.debounce(_processNewLinkListings);
     }
     function linkListingReady() {
         var linklistings = document.getElementsByClassName('linklisting');
@@ -1110,7 +1137,7 @@ RESES.linkListingMgr = (() => {
             for (var i = 0, len = linklistings.length; i < len; i++) {
                 _newLinkListings.push(linklistings[i]);
             }
-            _processNewLinkListings();
+            RESES.debounce(_processNewLinkListings);
             var showimages = document.getElementsByClassName('res-show-images')[0];
             if (showimages) {
                 showimages.addEventListener('click', () => {
@@ -1119,7 +1146,7 @@ RESES.linkListingMgr = (() => {
             }
         }
     }
-    RESES.onReady(linkListingReady, 0);
+    RESES.onLoaded(linkListingReady, 0);
     return {
         get listingCollection() { return _listingCollection; },
         updateLinkListings: _updateLinkListings
@@ -1292,7 +1319,7 @@ RESES.btnFilterPost = (() => {
         else if (cls.contains('shitpost')) {
             cls.replace('shitpost', 'goodpost');
         }
-        RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+        RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
     btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
         RESES.linkListingMgr.listingCollection.forEach((post) => {
@@ -1300,13 +1327,13 @@ RESES.btnFilterPost = (() => {
                 RESES.doAsync(() => post.autoDownvotePost());
             }
         });
-        RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+        RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
     btn.querySelector('#removeDownvotes').addEventListener('click', () => {
         RESES.linkListingMgr.listingCollection.forEach((post) => {
             RESES.doAsync(() => post.removeAutoDownvote());
         });
-        RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+        RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
     const elDropdownContent = btn.querySelector('.dropdown-content');
     btn.querySelector('#enableAutoDownvoting').addEventListener('click', () => {
@@ -1365,7 +1392,7 @@ RESES.btnFilterPost = (() => {
         }
     }
     RESES.onInit(tabMenuInit, -10);
-    RESES.onReady(tabMenuReady, -10);
+    RESES.onLoaded(tabMenuReady, -10);
     const elGoodposts = btn.querySelector('.goodpost span');
     const elFilteredposts = btn.querySelector('.filteredpost span');
     const elShitposts = btn.querySelector('.shitpost span');

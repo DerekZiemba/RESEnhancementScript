@@ -73,8 +73,9 @@ RESES.LinkListing = (() => {
 	function _handleVoteClick(post, ev) {
     if (ev.target === post.voteArrowDown) {
 			if (!post.isDownvoted) {
-				if (post.isExpanded) {
-					post.post.getElementsByClassName('expando-button')[0].click();
+        if (post.isExpanded) {
+          let btn = post.post.getElementsByClassName('expando-button')[0];
+          if (btn) { btn.click(); }
 				}
 				if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
 					RESES.linkRegistry.addBlockedUrl(post.url);
@@ -88,7 +89,7 @@ RESES.LinkListing = (() => {
 		}
 		//The downvote button may be clicked several times during initLinkListings when a post is autodownvoted.
 		// This will debounce all the calls so only a single call is made
-		RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
+		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
 	}
 
 	function _adjustFlairColor(post) {
@@ -319,7 +320,6 @@ RESES.linkListingMgr = (() => {
 		}
 		RESES.btnFilterPost.update({ good, filtered, shit });
 	}
-
 	function _processNewLinkListings() {
     console.time("ProcessNewLinkListings");
 
@@ -329,13 +329,13 @@ RESES.linkListingMgr = (() => {
 			for (var i = 0, len = children.length; i < len; i++) {
 				var listing = children[i];
 				if (listing.classList.contains('link')) {
-					_listingCollection[_listingCollection.index++] = new LinkListing(listing);
+          _listingCollection[_listingCollection.index++] = new LinkListing(listing);
 				}
 			}
 			linklisting = _newLinkListings.pop();
 		}
 
-		RESES.debounceMethod(_updateLinkListings); //a call to updateLinkListings may already be in progress if a post was auto downvoted
+		RESES.debounce(_updateLinkListings); //a call to updateLinkListings may already be in progress if a post was auto downvoted
 		console.timeEnd("ProcessNewLinkListings");
 	}
 
@@ -349,7 +349,7 @@ RESES.linkListingMgr = (() => {
 				}
 			}
 		}
-		RESES.debounceMethod(_processNewLinkListings);
+		RESES.debounce(_processNewLinkListings);
   }
 
   function linkListingReady() {
@@ -360,7 +360,7 @@ RESES.linkListingMgr = (() => {
 			linklistingObserver.observe(root, { childList: true });
 
 			for (var i = 0, len = linklistings.length; i < len; i++) { _newLinkListings.push(linklistings[i]); }
-			_processNewLinkListings();
+			RESES.debounce(_processNewLinkListings);
 
 			var showimages = document.getElementsByClassName('res-show-images')[0];
 			if (showimages) {
@@ -371,7 +371,7 @@ RESES.linkListingMgr = (() => {
 		}
   }
 
-	RESES.onReady(linkListingReady, 0);
+	RESES.onLoaded(linkListingReady, 0);
 
 	return {
 		get listingCollection() { return _listingCollection; },
