@@ -1,4 +1,24 @@
 "use strict";
+Element.From = (function () {
+    const rgx = /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g;
+    return function CreateElementFromHTML(html) {
+        var innerHtmlStart = html.indexOf('>') + 1;
+        var elemStart = html.substr(0, innerHtmlStart);
+        var match = rgx.exec(elemStart)[4];
+        var elem = window.document.createElement(match);
+        while ((match = rgx.exec(elemStart)) !== null) {
+            if (match[1] === undefined) {
+                elem.setAttribute(match[4], "");
+            }
+            else {
+                elem.setAttribute(match[1], match[3]);
+            }
+        }
+        elem.innerHTML = html.substr(innerHtmlStart, html.lastIndexOf('<') - innerHtmlStart);
+        rgx.lastIndex = 0;
+        return elem;
+    };
+}());
 const RESES = window.RESES = {
     extendType: (function () {
         function defineOne(proto, name, prop, options, obj) {
@@ -60,10 +80,6 @@ const RESES = window.RESES = {
             return value > 255 ? 255 : (value < 0 ? 0 : value);
         }
         function Color(data) {
-            this[0] = 255;
-            this[1] = 255;
-            this[2] = 255;
-            this[3] = 255;
             if (!(data === undefined || data === null || isNaN(data))) {
                 if (arguments.length > 1) {
                     this.r = arguments[0];
@@ -127,6 +143,10 @@ const RESES = window.RESES = {
         }
         Color.prototype = {
             constructor: Color,
+            0: 255,
+            1: 255,
+            2: 255,
+            3: 255,
             get length() { return this[3] === 255 ? 3 : 4; },
             get r() { return this[0]; },
             set r(value) { this[0] = normalizeComponent(value); },
@@ -189,117 +209,176 @@ const RESES = window.RESES = {
         document.body.removeChild(iframe);
         return result;
     },
-    doAsync: function doAsync(func) {
-        if (document.hidden) {
-            window.setTimeout(func, 0);
-        }
-        else {
-            window.requestAnimationFrame(func);
-        }
-    },
-    debounceMethod: (() => {
-        const wm = new WeakMap();
-        class Operation {
-            constructor(method) {
-                this.func = () => {
-                    method();
-                    wm.delete(method);
-                };
+    AsyncCtx: (() => {
+        function fix(num, div = 1000) { return Math.trunc(num * div) / div; }
+        class AsyncOp {
+            constructor(owner, key, delay, method) {
+                this.delay = +(delay || 0);
+                this.elapsed = +0;
+                this.count = -1 | 0;
+                this.background = false;
                 this.timer = 0 | 0;
-                this.hidden = false;
+                this.key = key || this;
+                this.method = method;
+                this.owner = owner;
+                this.start = fix(performance.now());
+                this.prev = this.start;
+                this.current = this.start;
+                this.tick = () => this._tick();
             }
+            get remaining() { return Math.trunc(this.delay - (this.current - this.start)); }
+            get elapsedTotal() { return fix(this.current - this.start); }
             cancel() {
-                this.hidden === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer);
+                this.background === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer);
             }
-            start() {
-                this.hidden = document.hidden;
-                this.timer = this.hidden === true ? window.setTimeout(this.func, 0) : window.requestAnimationFrame(this.func);
+            begin() {
+                this.background = document.hidden;
+                this.timer = this.background === true ? window.setTimeout(this.tick, this.delay) : window.requestAnimationFrame(this.tick);
+            }
+            _tick() {
+                this.count++;
+                this.prev = this.current;
+                this.current = fix(performance.now());
+                this.elapsed = fix(this.current - this.prev);
+                if (this.remaining > 0) {
+                    let finished = this.count > 0 ? " Finished" : "";
+                    console.info(`AsyncOp${finished} Cycle(${this.count}): ${this.elapsed}ms. Remaining: ${this.remaining}ms. Elapsed: ${this.elapsedTotal}. Background: ${this.background}`, this, this.method);
+                }
+                if (this.remaining > 0 || this.count == 0) {
+                    this.begin();
+                }
+                else {
+                    this.method(this);
+                    this.owner.free(this);
+                }
             }
         }
-        return function debounceMethod(method) {
-            var op = wm.get(method);
-            if (op !== undefined) {
-                op.cancel();
+        class AsyncCtx {
+            constructor(name) {
+                this.name = name;
+                this.peak = 0;
+                this.total = 0;
+                this.allTotal = 0;
+                this.longest = null;
+                this.currentLongest = null;
+                this.starttime = 0;
+                this.map = new Map();
             }
-            else {
-                op = new Operation(method);
-                wm.set(method, op);
+            get elapsed() { return fix(performance.now() - this.starttime); }
+            track(op) {
+                if (this.map.size === 0) {
+                    this.starttime = performance.now();
+                    this.currentLongest = null;
+                }
+                this.map.set(op.key, op);
+                this.peak = Math.max(this.peak, this.map.size);
+                this.total++;
+                this.allTotal++;
             }
-            op.start();
-        };
-    })(),
+            free(op) {
+                this.map.delete(op.key);
+                if (!this.longest || op.elapsedTotal > this.longest.elapsedTotal) {
+                    this.longest = op;
+                }
+                if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) {
+                    this.currentLongest = op;
+                }
+                if (this.map.size === 0 && this.elapsed > 5) {
+                    console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms`, this);
+                }
+                if (this.map.size === 0) {
+                    this.peak = 0;
+                    this.total = 0;
+                }
+            }
+            doAsync(func, delay) {
+                var op = new AsyncOp(this, null, delay, func);
+                this.track(op);
+                op.tick();
+                return op;
+            }
+            debounce(method) {
+                var op = this.map.get(method);
+                if (op !== undefined) {
+                    op.cancel();
+                }
+                else {
+                    op = new AsyncOp(this, method, 0, method);
+                    this.track(op);
+                }
+                op.begin();
+            }
+        }
+        AsyncCtx.AsyncOp = AsyncOp;
+        return AsyncCtx;
+    })()
 };
-(function initListeners(window, document, RESES) {
-    var _preinitCalls = [];
+(function () {
+    let context = new RESES.AsyncCtx("Default");
+    RESES.doAsync = function defaultDoAsync(func, delay = 0) {
+        return context.doAsync(func, delay);
+    };
+    RESES.debounceMethod = function defaultDebounceMethod(method) {
+        return context.debounce(method);
+    };
+})();
+(function initListeners(RESES) {
+    let context = new RESES.AsyncCtx("Initializer");
     var _initCalls = [];
     var _readyCalls = [];
-    function initialize() {
-        while (_initCalls.length > 0) {
-            var func = _initCalls.shift();
-            RESES.doAsync(func);
-        }
-        _initCalls = null;
-    }
-    function preinitialize() {
-        if (_preinitCalls !== null) {
-            while (_preinitCalls.length > 0) {
-                var func = _preinitCalls.shift();
-                func();
-            }
-            _preinitCalls = null;
-            if (document.readyState === 'loading') {
-                window.addEventListener("DOMContentLoaded", initialize);
-            }
-            else {
-                initialize();
-            }
-        }
-        else {
-            throw new Error("PreInit Already Executed");
-        }
-    }
-    function documentReady() {
-        while (_readyCalls.length > 0) {
-            var func = _readyCalls.shift();
-            RESES.doAsync(func);
-        }
-        _readyCalls = null;
-    }
     if (document.readyState !== "loading") {
-        documentReady();
+        console.info("RESES loaded during weird document state.", document.readyState);
+        RESES.doAsync(documentReady);
     }
     else {
         window.addEventListener("DOMContentLoaded", documentReady);
     }
-    RESES.extendType(RESES, {
-        onPreInit: function (method) {
-            if (_preinitCalls !== null) {
-                _preinitCalls.push(method);
-                RESES.debounceMethod(preinitialize);
+    function comparer(a, b) { return a.priority - b.priority; }
+    function initialize() {
+        if (_initCalls !== null) {
+            _initCalls.sort(comparer);
+            while (_initCalls.length > 0) {
+                let call = _initCalls.shift();
+                let func = call.method;
+                func();
             }
-            else {
-                throw new Error("Initialization already in progress. To late to call onPreInit.");
-            }
-        },
-        onInit: function (method) {
-            if (_preinitCalls !== null) {
-                _initCalls.push(method);
-                RESES.debounceMethod(preinitialize);
-            }
-            else {
-                throw new Error("Initialization already in progress. Too late to call onInit.");
-            }
-        },
-        onReady: function (method) {
-            if (_readyCalls !== null) {
-                _readyCalls.push(method);
-            }
-            else {
-                RESES.doAsync(method);
+            _initCalls = null;
+        }
+    }
+    function documentReady() {
+        let h2 = document.body.querySelector("h2");
+        if (h2 && h2.textContent === "all of our servers are busy right now") {
+            location.reload();
+        }
+        else {
+            initialize();
+            _readyCalls.sort(comparer);
+            while (_readyCalls.length > 0) {
+                let call = _readyCalls.shift();
+                let func = call.method;
+                context.doAsync(func);
             }
         }
-    });
-})(window, window.document, RESES);
+        _readyCalls = null;
+    }
+    RESES.onInit = function (method, priority = 100) {
+        if (_initCalls !== null) {
+            _initCalls.push({ priority, method });
+            context.debounce(initialize);
+        }
+        else {
+            throw new Error("Initialization already in progress. Too late to call onInit.");
+        }
+    };
+    RESES.onReady = function (method, priority = 100) {
+        if (_readyCalls !== null) {
+            _readyCalls.push({ priority, method });
+        }
+        else {
+            context.doAsync(method);
+        }
+    };
+})(RESES);
 RESES.extendType(String.prototype, {
     ReplaceAll: function ReplaceAll(sequence, value) {
         return this.split(sequence).join(value);
@@ -445,41 +524,41 @@ RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
         }
     }
 });
+RESES.bIsCommentPage = window.location.pathname.includes('/comments/');
+RESES.bIsUserPage = window.location.pathname.includes('/user/');
+RESES.subreddit = (() => {
+    var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname);
+    return m && m[1] ? m[1].toLocaleLowerCase() : null;
+})();
+RESES.config = (function localSettings() {
+    const cache = {};
+    function getSetting(key, _default) {
+        if (cache[key] !== undefined) {
+            return cache[key];
+        }
+        var value = localStorage.getItem('reses-' + key);
+        var setting = JSON.parse(value || _default.toString());
+        cache[key] = setting;
+        return setting;
+    }
+    function setSetting(key, value) {
+        cache[key] = value;
+        localStorage.setItem('reses-' + key, JSON.stringify(value));
+    }
+    return {
+        get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
+        set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
+        get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
+        set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
+        get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
+        set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
+    };
+})();
 RESES.extendType(RESES, {
-    bIsCommentPage: window.location.pathname.includes('/comments/'),
-    bIsUserPage: window.location.pathname.includes('/user/'),
-    subreddit: (() => {
-        var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname);
-        return m && m[1] ? m[1].toLocaleLowerCase() : null;
-    })(),
     get bIsMultireddit() {
         delete this.bIsMultireddit;
         return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
-    },
-    config: (function localSettings() {
-        const cache = {};
-        function getSetting(key, _default) {
-            if (cache[key] !== undefined) {
-                return cache[key];
-            }
-            var value = localStorage.getItem('reses-' + key);
-            var setting = JSON.parse(value || _default.toString());
-            cache[key] = setting;
-            return setting;
-        }
-        function setSetting(key, value) {
-            cache[key] = value;
-            localStorage.setItem('reses-' + key, JSON.stringify(value));
-        }
-        return {
-            get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
-            set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
-            get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
-            set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
-            get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
-            set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
-        };
-    })(),
+    }
 });
 RESES.filterData = {
     karmawhores: [
@@ -611,7 +690,9 @@ RESES.filterData = {
         "fuckingmachines", "IShouldBuyABoat", "CosplayBoobs", "taboofans", "emogirls", "HighHeels", "AbusePorn2",
         "leannadecker", "asiangirlswhitecocks", "Pushing", "maturemilf", "Lordosis", "deathmetalgfclub",
         "WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
-        "mila_azul", "sex_comics", "KateeOwen", "Hotwife"
+        "mila_azul", "sex_comics", "KateeOwen", "Hotwife", "EroticLuxury", "WrestleFap", "PickOne", "OliviaMunn",
+        "Titties", "Humongousaurustits", "sissyhypno", "CelebsBR", "dontslutshame", "AdultNeeds", "GodPussy",
+        "assholegonewild"
     ].map(x => x && x.toLowerCase()),
     pornaccounts: [
         "lilmshotstuff", "Bl0ndeB0i", "Alathenia", "kinkylilkittyy", "Immediateunmber", "justsomegirlidk", "serenityjaneee",
@@ -635,7 +716,8 @@ RESES.filterData = {
         "FortniteFashion", "EstateofMomo", "CellsAtWork", "HighschoolDxD", "BokuNoShipAcademia", "Tsunderes",
         "ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
         "Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
-        "pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz"
+        "pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz", "kancolle", "ReasonableFantasy",
+        "minipainting", "salty", "HollowKnight", "ShitPostCrusaders"
     ].map(x => x && x.toLowerCase()),
     annoyingflairs: [
         "Art", "Artwork", "FanArt", "Fan Art", "Fan Work"
@@ -645,10 +727,11 @@ RESES.filterData = {
         "BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig", "pitbulls",
         "drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
         "antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
-        "sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies"
+        "sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies",
+        "blackcats", "intermittentfasting"
     ].map(x => x && x.toLowerCase()),
     shows: [
-        "TheSimpsons"
+        "TheSimpsons", "gravityfalls"
     ].map(x => x && x.toLowerCase()),
     games: [
         "deadbydaylight", "smashbros", "DestinyTheGame", "destiny2", "Warframe", "NintendoSwitch", "Warhammer40k", "PathOfExile",
@@ -677,22 +760,24 @@ RESES.linkRegistry = (() => {
         addBlockedUrl: function addBlockedUrl(url) {
             var urls = LinkRegistry.blockedUrls;
             if (!urls.includes(url)) {
+                console.info("Blocking URL", url);
                 urls.push(url);
                 LinkRegistry.saveBlockedUrls();
             }
             else {
-                throw new Error("Duplicate Blocked Url. " + url);
+                console.error("Duplicate Blocked Url.", url);
             }
         },
         removeBlockedUrl: function removeBlockedUrl(url) {
             var urls = LinkRegistry.blockedUrls;
             var index = urls.indexOf(url);
             if (index >= 0) {
+                console.info("Removing Blocked URL", url);
                 urls.splice(index, 1);
                 LinkRegistry.saveBlockedUrls();
             }
             else {
-                throw new Error("Blocked Url Does not Exist and cannot be removed. " + url);
+                console.error("Blocked Url Does not Exist and cannot be removed.", url);
             }
         },
         checkIfBlockedUrl: function checkIfBlockedUrl(url) {
@@ -718,7 +803,8 @@ RESES.linkRegistry = (() => {
     return LinkRegistry;
 })();
 RESES.posts = [];
-RESES.LinkListing = ((window) => {
+RESES.LinkListing = (() => {
+    const asyncctx = new RESES.AsyncCtx("LinkListing");
     function _updateThumbnail(post) {
         if (post.thumbnail) {
             post.thumbnail.style.display = post.isExpanded ? 'none' : '';
@@ -739,6 +825,7 @@ RESES.LinkListing = ((window) => {
                     RESES.linkRegistry.removeBlockedUrl(post.url);
                 }
             }
+            post.bPending = false;
         }
         RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
     }
@@ -779,6 +866,7 @@ RESES.LinkListing = ((window) => {
     const filterData = RESES.filterData;
     const checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
     const registerLinkListing = RESES.linkRegistry.registerLinkListing;
+    const wm = new WeakMap();
     class LinkListing {
         constructor(post) {
             {
@@ -803,13 +891,14 @@ RESES.LinkListing = ((window) => {
                 this.bIsPolitics = false;
                 this.bIsShow = false;
                 this.bIsGame = false;
+                this.bPending = false;
                 this.updateThumbnail = () => _updateThumbnail(this);
                 this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
                 this.cls.add('zregistered');
             }
             {
                 if (this.flairLabel) {
-                    RESES.doAsync(() => _adjustFlairColor(this));
+                    asyncctx.doAsync(() => _adjustFlairColor(this));
                 }
                 if (this.midcol !== null) {
                     this.midcol.addEventListener('click', this.handleVoteClick);
@@ -880,26 +969,31 @@ RESES.LinkListing = ((window) => {
             this.updateThumbnail();
         }
         get expandobox() {
-            var expando = this.post.getElementsByClassName('res-expando-box')[0] || this.post.getElementsByClassName('expando')[0] || null;
-            if (expando !== null) {
-                Object.defineProperty(this, 'expandobox', { value: expando });
+            var item = wm.get(this);
+            if (!item) {
+                item = this.post.getElementsByClassName('res-expando-box')[0] || this.post.getElementsByClassName('expando')[0] || null;
+                item && wm.set(this, item);
             }
-            return expando;
+            return item;
         }
         get voteArrowDown() {
-            var arrow = this.midcol && this.midcol.getElementsByClassName('arrow')[1] || null;
-            if (arrow !== null) {
-                Object.defineProperty(this, 'voteArrowDown', { value: arrow });
+            var item = null;
+            if (this.midcol !== null) {
+                item = wm.get(this.midcol);
+                if (!item) {
+                    item = this.midcol.getElementsByClassName('arrow')[1] || null;
+                    item && wm.set(this.midcol, item);
+                }
             }
-            return arrow;
+            return item;
         }
         get cls() { return this.post.classList; }
         get age() { return Date.now() - this.timestamp; }
         get ageHours() { return this.age / 3600000; }
         get ageDays() { return this.age / 86400000; }
-        get isUpvoted() { return this.midcol === null ? false : this.midcol.classList.contains("likes"); }
-        get isDownvoted() { return this.midcol === null ? false : this.midcol.classList.contains("dislikes"); }
-        get isUnvoted() { return this.midcol === null ? false : this.midcol.classList.contains("unvoted"); }
+        get isUpvoted() { return this.hasClass("likes") ^ this.bPending; }
+        get isUnvoted() { return this.hasClass("unvoted") ^ this.bPending; }
+        get isDownvoted() { return this.hasClass("dislikes") ^ this.bPending; }
         get isExpanded() {
             var expando = this.expandobox;
             if (expando !== null) {
@@ -918,12 +1012,27 @@ RESES.LinkListing = ((window) => {
         get shouldBeDownvoted() {
             return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
         }
+        hasClass(classes) {
+            for (let i = 0, len = arguments.length; i < len; i++) {
+                let cls = arguments[i];
+                if (this.post.classList.contains(cls) || this.midcol && this.midcol.classList.contains(cls)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        clickDownvoteArrow() {
+            if (this.midcol !== null) {
+                this.bPending = true;
+                asyncctx.doAsync(() => this.voteArrowDown.click());
+            }
+        }
         autoDownvotePost() {
             var cfg = RESES.config;
-            if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted && this.ageDays < 30 && this.voteArrowDown !== null) {
+            if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted && this.ageDays < 30) {
                 if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
                     this.isAutoDownvoted = true;
-                    RESES.doAsync(() => this.voteArrowDown.click());
+                    this.clickDownvoteArrow();
                 }
                 if (this.expandobox) {
                     this.expandobox.hidden = true;
@@ -931,9 +1040,9 @@ RESES.LinkListing = ((window) => {
             }
         }
         removeAutoDownvote() {
-            if (this.voteArrowDown && this.isDownvoted && this.isAutoDownvoted) {
+            if (this.isDownvoted && this.isAutoDownvoted) {
                 this.isAutoDownvoted = false;
-                RESES.doAsync(() => this.voteArrowDown.click());
+                this.clickDownvoteArrow();
                 if (this.expandobox) {
                     this.expandobox.hidden = false;
                 }
@@ -941,8 +1050,8 @@ RESES.LinkListing = ((window) => {
         }
     }
     return LinkListing;
-})(window);
-RESES.linkListingMgr = ((document) => {
+})();
+RESES.linkListingMgr = (() => {
     const LinkListing = RESES.LinkListing;
     const _newLinkListings = [];
     const _listingCollection = Array(1000);
@@ -992,7 +1101,7 @@ RESES.linkListingMgr = ((document) => {
         }
         RESES.debounceMethod(_processNewLinkListings);
     }
-    RESES.onInit(() => {
+    function linkListingReady() {
         var linklistings = document.getElementsByClassName('linklisting');
         var root = linklistings[0];
         if (root) {
@@ -1009,13 +1118,14 @@ RESES.linkListingMgr = ((document) => {
                 });
             }
         }
-    });
+    }
+    RESES.onReady(linkListingReady, 0);
     return {
         get listingCollection() { return _listingCollection; },
         updateLinkListings: _updateLinkListings
     };
-})(window.document);
-RESES.ScrollingSidebar = ((window, document, RESES) => {
+})();
+RESES.ScrollingSidebar = (() => {
     function _toggleSidebar(ss, bState) {
         var cls = ss.el.classList;
         cls.add('sb-init');
@@ -1095,8 +1205,8 @@ RESES.ScrollingSidebar = ((window, document, RESES) => {
         }
     }
     return ScrollingSidebar;
-})(window, window.document, window.RESES);
-RESES.sideBarMgr = ((window, document, RESES) => {
+})();
+RESES.sideBarMgr = (() => {
     var ssleft, ssright;
     function _update() {
         var style = {};
@@ -1108,28 +1218,30 @@ RESES.sideBarMgr = ((window, document, RESES) => {
         }
         document.querySelectorAll('.content[role=main], .footer-parent').CSS(style);
     }
-    RESES.onPreInit(() => {
+    function sideBarMgrInit() {
         ssleft = new RESES.ScrollingSidebar('sbLeft', _update);
         ssright = new RESES.ScrollingSidebar('sbRight', _update);
-    });
-    RESES.onInit(() => {
+    }
+    function sideBarMgrReady() {
         document.querySelectorAll('.listing-chooser .grippy').Remove();
         ssleft.init(document.querySelector('.listing-chooser .contents'));
         ssright.init(document.getElementsByClassName('side')[0]);
         document.body.classList.add('sidebarman');
-    });
+    }
+    RESES.onInit(sideBarMgrInit, -5);
+    RESES.onReady(sideBarMgrReady, -5);
     return {
         get leftSidebar() { return ssleft; },
         get rightSidebar() { return ssright; }
     };
-})(window, window.document, window.RESES);
+})();
 RESES.addTabMenuButton = function addTabMenuButton(el) {
     var tabbar = document.getElementsByClassName('tabmenu')[0];
     if (tabbar) {
         tabbar.appendChild(el);
     }
 };
-RESES.btnFilterPost = ((window, document, RESES) => {
+RESES.btnFilterPost = (() => {
     const btn = Element.From(`
 		<li>
 			<style type="text/css" scoped>
@@ -1185,14 +1297,14 @@ RESES.btnFilterPost = ((window, document, RESES) => {
     btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
         RESES.linkListingMgr.listingCollection.forEach((post) => {
             if (post.isFilteredByRES) {
-                post.autoDownvotePost();
+                RESES.doAsync(() => post.autoDownvotePost());
             }
         });
         RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
     });
     btn.querySelector('#removeDownvotes').addEventListener('click', () => {
         RESES.linkListingMgr.listingCollection.forEach((post) => {
-            post.removeAutoDownvote();
+            RESES.doAsync(() => post.removeAutoDownvote());
         });
         RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
     });
@@ -1231,7 +1343,7 @@ RESES.btnFilterPost = ((window, document, RESES) => {
         elEnableRepostDownvoting.parentElement.style.display = 'block';
         elDisableRepostDownvoting.parentElement.style.display = 'none';
     });
-    RESES.onPreInit(() => {
+    function tabMenuInit() {
         elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
         if (RESES.config.bFilterDownvoting) {
             elEnableFilterDownvoting.parentElement.style.display = 'none';
@@ -1245,13 +1357,15 @@ RESES.btnFilterPost = ((window, document, RESES) => {
         else {
             elDisableRepostDownvoting.parentElement.style.display = 'none';
         }
-    });
-    RESES.onInit(() => {
+    }
+    function tabMenuReady() {
         if (!RESES.bIsCommentPage && !RESES.bIsUserPage) {
             document.body.classList.add('goodpost');
             RESES.addTabMenuButton(btn);
         }
-    });
+    }
+    RESES.onInit(tabMenuInit, -10);
+    RESES.onReady(tabMenuReady, -10);
     const elGoodposts = btn.querySelector('.goodpost span');
     const elFilteredposts = btn.querySelector('.filteredpost span');
     const elShitposts = btn.querySelector('.shitpost span');
@@ -1263,45 +1377,4 @@ RESES.btnFilterPost = ((window, document, RESES) => {
             elShitposts.textContent = counters.shit;
         }
     };
-})(window, window.document, window.RESES);
-RESES.btnLoadAllComments = ((window, document, RESES) => {
-    var arr = null, coms = null, scrollX = 0, scrollY = 0, bGuard = false;
-    const btn = Element.From(`<li><a id="loadAllComments" href="#3"/a><span>Load All Comments</span></li>`);
-    function doClick() {
-        if (arr.length > 0 && bGuard === false) {
-            bGuard = true;
-            scrollX = window.scrollX;
-            scrollY = window.scrollY;
-            var el = arr.pop();
-            el.click();
-            window.scroll(scrollX, scrollY);
-        }
-    }
-    function handleInserted(ev) {
-        if (arr.length > 0) {
-            var target = ev.target;
-            if (target.nodeName === "DIV" && target.classList.contains('thing')) {
-                bGuard = false;
-            }
-            doClick();
-        }
-        else {
-            coms.removeEventListener('DOMNodeInserted', handleInserted);
-        }
-    }
-    function handleClick() {
-        coms = document.querySelector('.commentarea');
-        arr = Array.from(coms.querySelectorAll('.morecomments a')).reverse();
-        coms.addEventListener('DOMNodeInserted', handleInserted);
-        doClick();
-    }
-    btn.addEventListener('click', handleClick);
-    RESES.onInit(() => {
-        if (RESES.bIsCommentPage) {
-            RESES.addTabMenuButton(btn);
-        }
-    });
-    return {
-        get btn() { return btn; }
-    };
-})(window, window.document, window.RESES);
+})();

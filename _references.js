@@ -1,4 +1,4 @@
-/// <reference path="src/styler.js" />
+
 /// <reference path="src/RESES.js" />
 /// <reference path="src/core.js" />
 /// <reference path="src/tabmenu.buttons.js" />

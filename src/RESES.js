@@ -4,6 +4,26 @@
 
 "use strict";
 
+Element.From = (function () {
+  const rgx = /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g;
+  return function CreateElementFromHTML(html) { //Almost 3x performance compared to jQuery and only marginally slower than manually creating element: https://jsbench.github.io/#02fe05ed4fdd9ff6582f364b01673425
+      var innerHtmlStart = html.indexOf('>') + 1;
+      var elemStart = html.substr(0, innerHtmlStart);
+      var match = rgx.exec(elemStart)[4];
+      var elem = window.document.createElement(match);
+      while ((match = rgx.exec(elemStart)) !== null) {
+          if (match[1] === undefined) {
+              elem.setAttribute(match[4], "");
+          } else {
+              elem.setAttribute(match[1], match[3]);
+          }
+      }
+      elem.innerHTML = html.substr(innerHtmlStart, html.lastIndexOf('<') - innerHtmlStart);
+      rgx.lastIndex = 0;
+      return elem;
+  };
+}());
+
 const RESES = window.RESES = {
 	extendType: (function () {
     function defineOne(proto, name, prop, options, obj) {
@@ -41,7 +61,6 @@ const RESES = window.RESES = {
     }
     return extendType;
   }()),
-
 	Color: (function () {
 		function toHex(num, padding) {
 			return num.toString(16).padStart(padding || 2);
@@ -60,10 +79,6 @@ const RESES = window.RESES = {
 		}
 
 		function Color(data) {
-			this[0] = 255;
-			this[1] = 255;
-			this[2] = 255;
-			this[3] = 255;
 			if (!(data === undefined || data === null || isNaN(data))) {
 				if (arguments.length > 1) {
 					this.r = arguments[0];
@@ -119,6 +134,10 @@ const RESES = window.RESES = {
 
 		Color.prototype = {
 			constructor: Color,
+			0: 255,
+			1: 255,
+			2: 255,
+			3: 255,
 			get length() { return this[3] === 255 ? 3 : 4; },
 			get r() { return this[0];	},
 			set r(value) { this[0] = normalizeComponent(value); },
@@ -157,7 +176,6 @@ const RESES = window.RESES = {
     };
 		return Color;
 	}()),
-
 	getNonStandardWindowProperties: function getNonStandardWindowProperties(win, bAsArray) {
 		if (typeof win === 'boolean') {
 			bAsArray = win; win = window;
@@ -174,122 +192,181 @@ const RESES = window.RESES = {
 		return result;
 	},
 
-	/** requestAnimationFrame doesn't work when the tab is in the background. This ensures the operation will happen regardless. */
-	doAsync: function doAsync(func) {
-		if (document.hidden) {
-			window.setTimeout(func, 0);
-		} else {
-			window.requestAnimationFrame(func);
-		}
-	},
+  AsyncCtx: (() => {
+    function fix(num, div = 1000) { return Math.trunc(num * div) / div; }
 
-	/** deboucnes redundant calls that will happen in the same animation frame */
-	debounceMethod: (() => {
-		const wm = new WeakMap();
+    class AsyncOp {
+      constructor(owner, key, delay, method) {
+        this.delay = +(delay || 0);
+        this.elapsed = +0;
+        this.count = -1 | 0;
+        this.background = false;
+        this.timer = 0 | 0;
 
-		class Operation {
-			constructor(method) {
-				this.func = () => {
-					method();
-					wm.delete(method);
-				};
-				this.timer = 0 | 0;
-				this.hidden = false;
-			}
-			cancel() {
-				this.hidden === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer); //jshint ignore:line
-			}
-			start() {
-				this.hidden = document.hidden;
-				this.timer = this.hidden === true ? window.setTimeout(this.func, 0) : window.requestAnimationFrame(this.func);
-			}
-		}
+        this.key = key || this;
+        this.method = method;
+        this.owner = owner;
 
-		return function debounceMethod(method) {
-			var op = wm.get(method);
-			if (op !== undefined) {
-				op.cancel();
-			} else {
-				op = new Operation(method);
-				wm.set(method, op);
+        this.start = fix(performance.now());
+        this.prev = this.start;
+        this.current = this.start;
+
+        this.tick = () => this._tick();
+        // this.interval = this.delay <= 1 ? 0 : (this.delay <= 10 ? 1 : (this.delay <= 100 ? 10 : 15));
+      }
+      get remaining() { return Math.trunc(this.delay - (this.current - this.start)); }
+      get elapsedTotal() { return fix(this.current - this.start); }
+      cancel() {
+				this.background === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer); //jshint ignore:line
 			}
-			op.start();
-		};
-	})(),
+			begin() {
+				this.background = document.hidden;
+				this.timer = this.background === true ? window.setTimeout(this.tick, this.delay) : window.requestAnimationFrame(this.tick);
+			}
+      _tick() {
+        this.count++;
+        this.prev = this.current;
+        this.current = fix(performance.now());
+        this.elapsed = fix(this.current - this.prev);
+        if (this.remaining > 0) {
+          let finished = this.count > 0 ? " Finished" : "";
+          console.info(`AsyncOp${finished} Cycle(${this.count}): ${this.elapsed}ms. Remaining: ${this.remaining}ms. Elapsed: ${this.elapsedTotal}. Background: ${this.background}`, this, this.method);
+        }
+        if (this.remaining > 0 || this.count == 0) {
+          this.begin();
+        } else {
+          this.method(this);
+          this.owner.free(this);
+        }
+      }
+    }
+
+    class AsyncCtx {
+      constructor(name) {
+        this.name = name;
+        this.peak = 0;
+        this.total = 0;
+        this.allTotal = 0;
+        this.longest = null;
+        this.currentLongest = null;
+        this.starttime = 0;
+        this.map = new Map();
+      }
+      get elapsed() { return fix(performance.now() - this.starttime); }
+      track(op) {
+        if (this.map.size === 0) {
+          this.starttime = performance.now();
+          this.currentLongest = null;
+        }
+        this.map.set(op.key, op);
+        this.peak = Math.max(this.peak, this.map.size);
+        this.total++;
+        this.allTotal++;
+      }
+      free(op) {
+        this.map.delete(op.key);
+        if (!this.longest || op.elapsedTotal > this.longest.elapsedTotal) { this.longest = op; }
+        if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) { this.currentLongest = op; }
+        if (this.map.size === 0 && this.elapsed > 5) {
+          console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms`, this);
+        }
+        if (this.map.size === 0) {
+          this.peak = 0;
+          this.total = 0;
+        }
+      }
+      doAsync(func, delay) {
+        var op = new AsyncOp(this, null, delay, func);
+        this.track(op);
+        op.tick();
+        return op;
+      }
+      debounce(method) {
+        var op = this.map.get(method);
+        if (op !== undefined) {
+          op.cancel();
+        } else {
+          op = new AsyncOp(this, method, 0, method);
+          this.track(op);
+        }
+        op.begin();
+      }
+    }
+
+    AsyncCtx.AsyncOp = AsyncOp;
+    return AsyncCtx;
+  })()
 };
 
-(function initListeners(window, document, RESES) {
-	var _preinitCalls = [];
+(function() {
+  let context = new RESES.AsyncCtx("Default");
+  RESES.doAsync = function defaultDoAsync(func, delay = 0) {
+    return context.doAsync(func, delay);
+  };
+  RESES.debounceMethod = function defaultDebounceMethod(method) {
+    return context.debounce(method);
+  }
+})();
+
+(function initListeners(RESES) {
+  let context = new RESES.AsyncCtx("Initializer");
 	var _initCalls = [];
 	var _readyCalls = [];
 
-	function initialize() {
-		while (_initCalls.length > 0) {
-			var func = _initCalls.shift();
-			RESES.doAsync(func);
-		}
-		_initCalls = null;
-	}
+  if (document.readyState !== "loading") {
+    console.info("RESES loaded during weird document state.", document.readyState);
+    RESES.doAsync(documentReady);
+	} else {
+		window.addEventListener("DOMContentLoaded", documentReady);
+  }
 
-	function preinitialize() {
-		if (_preinitCalls !== null) {
-			while (_preinitCalls.length > 0) {
-				var func = _preinitCalls.shift();
+  function comparer(a, b) { return a.priority - b.priority; }
+
+  function initialize() {
+    if (_initCalls !== null) {
+      _initCalls.sort(comparer);
+      while (_initCalls.length > 0) {
+        let call = _initCalls.shift();
+				let func = call.method;
 				func();
 			}
-			_preinitCalls = null;
-
-			if (document.readyState === 'loading') {
-				window.addEventListener("DOMContentLoaded", initialize);
-			} else {
-				initialize();
-			}
-		} else {
-			throw new Error("PreInit Already Executed");
-		}
+			_initCalls = null;
+    }
 	}
 
-	function documentReady() {
-		while (_readyCalls.length > 0) {
-			var func = _readyCalls.shift();
-			RESES.doAsync(func);
-		}
+  function documentReady() {
+    let h2 = document.body.querySelector("h2");
+    if (h2 && h2.textContent === "all of our servers are busy right now") {
+      location.reload();
+    } else {
+      initialize();
+      _readyCalls.sort(comparer);
+      while (_readyCalls.length > 0) {
+        let call = _readyCalls.shift();
+				let func = call.method;
+        context.doAsync(func);
+      }
+    }
 		_readyCalls = null;
 	}
 
-	if (document.readyState !== "loading") {
-		documentReady();
-	} else {
-		window.addEventListener("DOMContentLoaded", documentReady);
-	}
+  RESES.onInit = function (method, priority = 100) {
+    if (_initCalls !== null) {
+      _initCalls.push({ priority, method });
+      context.debounce(initialize);
+    } else {
+      throw new Error("Initialization already in progress. Too late to call onInit.");
+    }
+  };
+  RESES.onReady = function (method, priority = 100) {
+    if (_readyCalls !== null) {
+      _readyCalls.push({ priority, method });
+    } else {
+      context.doAsync(method);
+    }
+  };
 
-	RESES.extendType(RESES, {
-		onPreInit: function (method) {
-			if (_preinitCalls !== null) {
-				_preinitCalls.push(method);
-				RESES.debounceMethod(preinitialize);
-			} else {
-				throw new Error("Initialization already in progress. To late to call onPreInit.");
-			}
-		},
-		onInit: function (method) {
-			if (_preinitCalls !== null) {
-				_initCalls.push(method);
-				RESES.debounceMethod(preinitialize);
-			} else {
-				throw new Error("Initialization already in progress. Too late to call onInit.");
-			}
-		},
-		onReady: function (method) {
-			if (_readyCalls !== null) {
-				_readyCalls.push(method);
-			} else {
-				RESES.doAsync(method);
-			}
-		}
-	});
-
-})(window, window.document, RESES);
+})(RESES);
 
 
 /**NOTE: Custom methods that are added to existing types are purposely capitalized. */

@@ -8,7 +8,7 @@ RESES.addTabMenuButton = function addTabMenuButton(el) {
 	if (tabbar) { tabbar.appendChild(el); }
 };
 
-RESES.btnFilterPost = ((window, document, RESES) => {
+RESES.btnFilterPost = (() => {
 	const btn = Element.From(`
 		<li>
 			<style type="text/css" scoped>
@@ -64,15 +64,15 @@ RESES.btnFilterPost = ((window, document, RESES) => {
 	btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
 		RESES.linkListingMgr.listingCollection.forEach((post) => {
 			if (post.isFilteredByRES) {
-				post.autoDownvotePost();
+        RESES.doAsync(() => post.autoDownvotePost());
 			}
 		});
 		RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
 	});
 
 	btn.querySelector('#removeDownvotes').addEventListener('click', () => {
-		RESES.linkListingMgr.listingCollection.forEach((post) => {
-			post.removeAutoDownvote();
+    RESES.linkListingMgr.listingCollection.forEach((post) => {
+      RESES.doAsync(() => post.removeAutoDownvote());
 		});
 		RESES.debounceMethod(RESES.linkListingMgr.updateLinkListings);
 	});
@@ -116,9 +116,8 @@ RESES.btnFilterPost = ((window, document, RESES) => {
 		elDisableRepostDownvoting.parentElement.style.display = 'none';
 	});
 
-
-	RESES.onPreInit(() => {
-		elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
+  function tabMenuInit() {
+    elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
 		if (RESES.config.bFilterDownvoting) {
 			elEnableFilterDownvoting.parentElement.style.display = 'none';
 		} else {
@@ -129,14 +128,17 @@ RESES.btnFilterPost = ((window, document, RESES) => {
 		} else {
 			elDisableRepostDownvoting.parentElement.style.display = 'none';
 		}
-	});
+  }
 
-	RESES.onInit(() => {
+  function tabMenuReady() {
 		if (!RESES.bIsCommentPage && !RESES.bIsUserPage) {
 			document.body.classList.add('goodpost');
 			RESES.addTabMenuButton(btn);
 		}
-	});
+  }
+
+	RESES.onInit(tabMenuInit, -10);
+	RESES.onReady(tabMenuReady, -10);
 
 	const elGoodposts = btn.querySelector('.goodpost span');
 	const elFilteredposts = btn.querySelector('.filteredpost span');
@@ -150,53 +152,53 @@ RESES.btnFilterPost = ((window, document, RESES) => {
 			elShitposts.textContent = counters.shit;
 		}
 	};
-})(window, window.document, window.RESES);
+})();
 
 
 
-RESES.btnLoadAllComments = ((window, document, RESES) => {
-	var arr = null, coms = null, scrollX = 0, scrollY = 0, bGuard = false;
-	const btn = Element.From(`<li><a id="loadAllComments" href="#3"/a><span>Load All Comments</span></li>`);
+// RESES.btnLoadAllComments = (() => {
+// 	var arr = null, coms = null, scrollX = 0, scrollY = 0, bGuard = false;
+// 	const btn = Element.From(`<li><a id="loadAllComments" href="#3"/a><span>Load All Comments</span></li>`);
 
-	function doClick() {
-		if (arr.length > 0 && bGuard === false) {
-			bGuard = true;
-			scrollX = window.scrollX;
-			scrollY = window.scrollY;
-			var el = arr.pop();
-			el.click();
-			window.scroll(scrollX, scrollY);
-		}
-	}
-	function handleInserted(ev) {
-		if (arr.length > 0) {
-			var target = ev.target;
-			if (target.nodeName === "DIV" && target.classList.contains('thing')) {
-				bGuard = false;
-			}
-			doClick();
-		} else {
-			coms.removeEventListener('DOMNodeInserted', handleInserted);
-		}
-	}
-	function handleClick() {
-		coms = document.querySelector('.commentarea');
-		arr = Array.from(coms.querySelectorAll('.morecomments a')).reverse();
-		coms.addEventListener('DOMNodeInserted', handleInserted);
-		doClick();
-	}
+// 	function doClick() {
+// 		if (arr.length > 0 && bGuard === false) {
+// 			bGuard = true;
+// 			scrollX = window.scrollX;
+// 			scrollY = window.scrollY;
+// 			var el = arr.pop();
+// 			el.click();
+// 			window.scroll(scrollX, scrollY);
+// 		}
+// 	}
+// 	function handleInserted(ev) {
+// 		if (arr.length > 0) {
+// 			var target = ev.target;
+// 			if (target.nodeName === "DIV" && target.classList.contains('thing')) {
+// 				bGuard = false;
+// 			}
+// 			doClick();
+// 		} else {
+// 			coms.removeEventListener('DOMNodeInserted', handleInserted);
+// 		}
+// 	}
+// 	function handleClick() {
+// 		coms = document.querySelector('.commentarea');
+// 		arr = Array.from(coms.querySelectorAll('.morecomments a')).reverse();
+// 		coms.addEventListener('DOMNodeInserted', handleInserted);
+// 		doClick();
+// 	}
 
-	btn.addEventListener('click', handleClick);
+// 	btn.addEventListener('click', handleClick);
 
-	RESES.onInit(() => {
-		if (RESES.bIsCommentPage) {
-			RESES.addTabMenuButton(btn);
-		}
-	});
+// 	RESES.onReady(() => {
+// 		if (RESES.bIsCommentPage) {
+// 			RESES.addTabMenuButton(btn);
+// 		}
+// 	});
 
-	return {
-		get btn() { return btn; }
-	};
-})(window, window.document, window.RESES);
+// 	return {
+// 		get btn() { return btn; }
+// 	};
+// })();
 
 

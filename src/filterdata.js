@@ -135,7 +135,9 @@ RESES.filterData = {
 		"fuckingmachines", "IShouldBuyABoat", "CosplayBoobs", "taboofans", "emogirls", "HighHeels", "AbusePorn2",
 		"leannadecker", "asiangirlswhitecocks", "Pushing", "maturemilf", "Lordosis", "deathmetalgfclub",
 		"WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
-		"mila_azul", "sex_comics", "KateeOwen", "Hotwife"
+		"mila_azul", "sex_comics", "KateeOwen", "Hotwife", "EroticLuxury", "WrestleFap", "PickOne", "OliviaMunn",
+		"Titties", "Humongousaurustits", "sissyhypno", "CelebsBR", "dontslutshame", "AdultNeeds", "GodPussy",
+		"assholegonewild"
 	].map(x => x && x.toLowerCase()),
 
 	pornaccounts: [
@@ -161,7 +163,8 @@ RESES.filterData = {
 		"FortniteFashion", "EstateofMomo", "CellsAtWork", "HighschoolDxD", "BokuNoShipAcademia", "Tsunderes",
 		"ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
 		"Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
-		"pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz"
+		"pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz", "kancolle", "ReasonableFantasy",
+		"minipainting", "salty", "HollowKnight", "ShitPostCrusaders"
 	].map(x => x && x.toLowerCase()),
 
 	annoyingflairs: [
@@ -173,11 +176,12 @@ RESES.filterData = {
 		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig", "pitbulls",
 		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
 		"antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
-		"sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies"
+		"sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies",
+		"blackcats", "intermittentfasting"
 	].map(x => x && x.toLowerCase()),
 
 	shows: [
-		"TheSimpsons"
+		"TheSimpsons", "gravityfalls"
 	].map(x => x && x.toLowerCase()),
 
 	games: [

@@ -4,7 +4,7 @@
 
 
 "use strict";
-RESES.ScrollingSidebar = ((window, document, RESES) => {
+RESES.ScrollingSidebar = (() => {
 	function _toggleSidebar(ss, bState) {
 		var cls = ss.el.classList;
 		cls.add('sb-init');
@@ -87,11 +87,11 @@ RESES.ScrollingSidebar = ((window, document, RESES) => {
 	}
 
 	return ScrollingSidebar;
-})(window, window.document, window.RESES);
+})();
 
 
 
-RESES.sideBarMgr = ((window, document, RESES) => {
+RESES.sideBarMgr = (() => {
 	var ssleft, ssright;
 
 	function _update() {
@@ -99,23 +99,26 @@ RESES.sideBarMgr = ((window, document, RESES) => {
 		if (ssleft.sled) { style.paddingLeft = Math.max(8, ssleft.el.scrollWidth); }
 		if (ssright.sled) { style.paddingRight = Math.max(8, ssright.el.scrollWidth); }
 		document.querySelectorAll('.content[role=main], .footer-parent').CSS(style);
-	}
+  }
 
-	RESES.onPreInit(() => {
+  function sideBarMgrInit() {
 		ssleft = new RESES.ScrollingSidebar('sbLeft', _update);
 		ssright = new RESES.ScrollingSidebar('sbRight', _update);
-	});
+  }
 
-	RESES.onInit(() => {
+  function sideBarMgrReady() {
 		document.querySelectorAll('.listing-chooser .grippy').Remove();
 		ssleft.init(document.querySelector('.listing-chooser .contents'));
 		ssright.init(document.getElementsByClassName('side')[0]);
-		document.body.classList.add('sidebarman');
-	});
+    document.body.classList.add('sidebarman');
+  }
+
+	RESES.onInit(sideBarMgrInit, -5);
+	RESES.onReady(sideBarMgrReady, -5);
 
 	return {
 		get leftSidebar() { return ssleft; },
 		get rightSidebar() { return ssright; }
 	};
-})(window, window.document, window.RESES);
+})();
 

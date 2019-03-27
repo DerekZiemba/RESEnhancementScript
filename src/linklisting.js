@@ -20,21 +20,23 @@ RESES.linkRegistry = (() => {
 		},
 		addBlockedUrl: function addBlockedUrl(url) {
 			var urls = LinkRegistry.blockedUrls;
-			if (!urls.includes(url)) {
+      if (!urls.includes(url)) {
+        console.info("Blocking URL", url);
 				urls.push(url);
 				LinkRegistry.saveBlockedUrls();
-			} else {
-				throw new Error("Duplicate Blocked Url. " + url);
+      } else {
+        console.error("Duplicate Blocked Url.", url);
 			}
 		},
 		removeBlockedUrl: function removeBlockedUrl(url) {
 			var urls = LinkRegistry.blockedUrls;
 			var index = urls.indexOf(url);
-			if (index >= 0) {
+      if (index >= 0) {
+        console.info("Removing Blocked URL", url);
 				urls.splice(index, 1);
 				LinkRegistry.saveBlockedUrls();
 			} else {
-				throw new Error("Blocked Url Does not Exist and cannot be removed. " + url);
+				console.error("Blocked Url Does not Exist and cannot be removed.", url);
 			}
 		},
 		checkIfBlockedUrl: function checkIfBlockedUrl(url) {
@@ -61,14 +63,15 @@ RESES.linkRegistry = (() => {
 })();
 
 RESES.posts = [];
-RESES.LinkListing = ((window) => {
+RESES.LinkListing = (() => {
+  const asyncctx = new RESES.AsyncCtx("LinkListing");
 
 	function _updateThumbnail(post) {
 		if (post.thumbnail) { post.thumbnail.style.display = post.isExpanded ? 'none' : ''; }
 	}
 
 	function _handleVoteClick(post, ev) {
-		if (ev.target === post.voteArrowDown) {
+    if (ev.target === post.voteArrowDown) {
 			if (!post.isDownvoted) {
 				if (post.isExpanded) {
 					post.post.getElementsByClassName('expando-button')[0].click();
@@ -80,7 +83,8 @@ RESES.LinkListing = ((window) => {
 				if (ev.isTrusted && !post.isAutoDownvoted && post.url) {
 					RESES.linkRegistry.removeBlockedUrl(post.url);
 				}
-			}
+      }
+      post.bPending = false;
 		}
 		//The downvote button may be clicked several times during initLinkListings when a post is autodownvoted.
 		// This will debounce all the calls so only a single call is made
@@ -141,22 +145,23 @@ RESES.LinkListing = ((window) => {
 				this.bIsAnnoying = false;
 				this.bIsPolitics = false;
 				this.bIsShow = false;
-				this.bIsGame = false;
+        this.bIsGame = false;
+        this.bPending = false;
 
-				this.updateThumbnail = () => _updateThumbnail(this);
-				this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
+        this.updateThumbnail = () => _updateThumbnail(this);
+        this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
 
-				this.cls.add('zregistered');
+        this.cls.add('zregistered');
 			}
 			{ //Processing
 				if (this.flairLabel) {
 					//Due to the getComputedStyle call, this has substantial overhead if not done in animation frame, slowing down the initLinkListings method
 					// For 100 posts, overhead is decreased from 60ms to 8ms.
-					RESES.doAsync(() => _adjustFlairColor(this));
+					asyncctx.doAsync(() => _adjustFlairColor(this));
 				}
 
 				if (this.midcol !== null) {
-					this.midcol.addEventListener('click', this.handleVoteClick);
+          this.midcol.addEventListener('click', this.handleVoteClick);
 				}
 
 				if (this.url !== null) {
@@ -234,9 +239,9 @@ RESES.LinkListing = ((window) => {
 		get age() { return Date.now() - this.timestamp; }
 		get ageHours() { return this.age / 3600000; }
 		get ageDays() { return this.age / 86400000; }
-		get isUpvoted() { return this.midcol === null ? false : this.midcol.classList.contains("likes"); }
-		get isDownvoted() { return this.midcol === null ? false : this.midcol.classList.contains("dislikes"); }
-		get isUnvoted() { return this.midcol === null ? false : this.midcol.classList.contains("unvoted"); }
+    get isUpvoted() { return this.hasClass("likes") ^ this.bPending; }
+    get isUnvoted() { return this.hasClass("unvoted") ^ this.bPending; }
+    get isDownvoted() { return this.hasClass("dislikes") ^ this.bPending; }
 		get isExpanded() {
 			var expando = this.expandobox;
 			if (expando !== null) {
@@ -254,33 +259,47 @@ RESES.LinkListing = ((window) => {
 		}
 		get shouldBeDownvoted() {
 			return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
-		}
+    }
+    hasClass(classes) {
+      for (let i = 0, len = arguments.length; i < len; i++) {
+        let cls = arguments[i];
+        if (this.post.classList.contains(cls) || this.midcol && this.midcol.classList.contains(cls)) { return true; }
+      }
+      return false;
+    }
+    clickDownvoteArrow() {
+      if (this.midcol !== null) {
+        this.bPending = true;
+        asyncctx.doAsync(()=> this.voteArrowDown.click());
+        // this.voteArrowDown.click();
+      }
+    }
 		autoDownvotePost() {
 			var cfg = RESES.config;
-			if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted  && this.ageDays < 30 && this.voteArrowDown !== null) {
+			if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted  && this.ageDays < 30) {
 				if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
 					this.isAutoDownvoted = true;
 					//Since posts are autodownvoted during creation in initLinkListings, calling the click handler now will result in substantial overhead
 					// For 100 posts, 3 of which get downvoted, overhead is decreased from 100ms to 8ms.
-					RESES.doAsync(() => this.voteArrowDown.click());
+          this.clickDownvoteArrow();
 				}
 				if (this.expandobox) { this.expandobox.hidden = true; }
 			}
 		}
 		removeAutoDownvote() {
-			if (this.voteArrowDown && this.isDownvoted && this.isAutoDownvoted) {
-				this.isAutoDownvoted = false;
-				RESES.doAsync(() => this.voteArrowDown.click());
+			if (this.isDownvoted && this.isAutoDownvoted) {
+        this.isAutoDownvoted = false;
+        this.clickDownvoteArrow();
 				if (this.expandobox) { this.expandobox.hidden = false; }
 			}
 		}
 	}
 
 	return LinkListing;
-})(window);
+})();
 
 
-RESES.linkListingMgr = ((document) => {
+RESES.linkListingMgr = (() => {
 	const LinkListing = RESES.LinkListing;
 	const _newLinkListings = [];
 	const _listingCollection = Array(1000); _listingCollection.index = 0;
@@ -302,7 +321,8 @@ RESES.linkListingMgr = ((document) => {
 	}
 
 	function _processNewLinkListings() {
-		console.time("ProcessNewLinkListings");
+    console.time("ProcessNewLinkListings");
+
 		var linklisting = _newLinkListings.pop();
 		while (linklisting) {
 			var children = linklisting.children;
@@ -330,9 +350,9 @@ RESES.linkListingMgr = ((document) => {
 			}
 		}
 		RESES.debounceMethod(_processNewLinkListings);
-	}
+  }
 
-	RESES.onInit(() => {
+  function linkListingReady() {
 		var linklistings = document.getElementsByClassName('linklisting');
 		var root = linklistings[0];
 		if (root) {
@@ -349,12 +369,14 @@ RESES.linkListingMgr = ((document) => {
 				});
 			}
 		}
-	});
+  }
+
+	RESES.onReady(linkListingReady, 0);
 
 	return {
 		get listingCollection() { return _listingCollection; },
 		updateLinkListings: _updateLinkListings
 	};
 
-})(window.document);
+})();
 
