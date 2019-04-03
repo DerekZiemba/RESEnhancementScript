@@ -5,6 +5,7 @@
 
 "use strict";
 RESES.ScrollingSidebar = (() => {
+
 	function _toggleSidebar(ss, bState) {
 		var cls = ss.el.classList;
 		cls.add('sb-init');
@@ -92,7 +93,7 @@ RESES.ScrollingSidebar = (() => {
 
 
 RESES.sideBarMgr = (() => {
-	var ssleft, ssright;
+	var ssleft, ssright, ssheader;
 
 	function _update() {
 		var style = {};
@@ -103,13 +104,15 @@ RESES.sideBarMgr = (() => {
 
   function sideBarMgrInit() {
 		ssleft = new RESES.ScrollingSidebar('sbLeft', _update);
-		ssright = new RESES.ScrollingSidebar('sbRight', _update);
+    ssright = new RESES.ScrollingSidebar('sbRight', _update);
+    // ssheader = new RESES.ScrollingSidebar('sbHeader', _update);
   }
 
   function sideBarMgrReady() {
 		document.querySelectorAll('.listing-chooser .grippy').Remove();
 		ssleft.init(document.querySelector('.listing-chooser .contents'));
-		ssright.init(document.getElementsByClassName('side')[0]);
+    ssright.init(document.getElementsByClassName('side')[0]);
+    // ssheader.init(document.getElementById('header'));
     document.body.classList.add('sidebarman');
   }
 
@@ -118,7 +121,8 @@ RESES.sideBarMgr = (() => {
 
 	return {
 		get leftSidebar() { return ssleft; },
-		get rightSidebar() { return ssright; }
+    get rightSidebar() { return ssright; },
+    get header() { return ssheader; }
 	};
 })();
 

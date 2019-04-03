@@ -240,10 +240,6 @@ const RESES = window.RESES = {
                 this.prev = this.current;
                 this.current = fix(performance.now());
                 this.elapsed = fix(this.current - this.prev);
-                if (this.remaining > 0) {
-                    let finished = this.count > 0 ? " Finished" : "";
-                    console.info(`AsyncOp${finished} Cycle(${this.count}): ${this.elapsed}ms. Remaining: ${this.remaining}ms. Elapsed: ${this.elapsedTotal}. Background: ${this.background}`, this, this.method);
-                }
                 if (this.remaining > 0 || this.count == 0) {
                     this.begin();
                 }
@@ -282,9 +278,6 @@ const RESES = window.RESES = {
                 }
                 if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) {
                     this.currentLongest = op;
-                }
-                if (this.peek !== 0 && this.map.size === 0 && this.elapsed > 5) {
-                    console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms. Peak: ${this.peak}. Total: ${this.total}`, this);
                 }
                 if (this.map.size === 0) {
                     this.peak = 0;
@@ -508,6 +501,10 @@ RESES.extendType(String.prototype, {
         return this;
     }
 });
+RESES.extendType(Array.prototype, {
+    get last() { return this[this.length - 1]; },
+    set last(value) { this[this.length - 1] = value; }
+}, { enumerable: false });
 RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
     Remove: (function () {
         const matches = Element.prototype.matches;
@@ -770,42 +767,81 @@ RESES.filterData = {
 };
 RESES.linkRegistry = (() => {
     const _links = {};
-    var _blockedUrlsCache = null;
+    var _newBlockedCache = null;
+    var _rgxGetHostName = /(\w{1,})(?=(?:\.[a-z]{2,4}){0,2}$)/;
+    function splitUrl(url) {
+        var parts = url.split("/").filter(x => x);
+        try {
+            parts[0] = _rgxGetHostName.exec(parts[0])[0];
+        }
+        catch (e) {
+            console.error(url, parts, e);
+            throw e;
+        }
+        return parts;
+    }
+    function getNode(parts) {
+        var blocked = LinkRegistry.dictBlocked;
+        for (var i = 0, len = parts.length - 1; i < len; i++) {
+            let node = blocked[parts[i]];
+            if (!node) {
+                node = blocked[parts[i]] = {};
+            }
+            blocked = node;
+        }
+        return blocked;
+    }
+    function saveBlocked() {
+        localStorage.setItem('reses-dictblocked', JSON.stringify(_newBlockedCache));
+    }
     const LinkRegistry = {
         get links() {
             return _links;
         },
-        get blockedUrls() {
-            return _blockedUrlsCache || (_blockedUrlsCache = JSON.parse(localStorage.getItem('reses-blockedurls') || '[]'));
+        get dictBlocked() {
+            return _newBlockedCache || (_newBlockedCache = JSON.parse(localStorage.getItem('reses-dictblocked') || '{}'));
         },
-        saveBlockedUrls: function saveBlockedUrls() {
-            localStorage.setItem('reses-blockedurls', JSON.stringify(_blockedUrlsCache));
-        },
-        addBlockedUrl: function addBlockedUrl(url) {
-            var urls = LinkRegistry.blockedUrls;
-            if (!urls.includes(url)) {
-                console.info("Blocking URL", url);
-                urls.push(url);
-                LinkRegistry.saveBlockedUrls();
+        addBlockedUrl: function addBlockedUrl(url, nosave) {
+            var parts = splitUrl(url);
+            var last = parts[parts.length - 1];
+            var node = getNode(parts);
+            if (last in node) {
+                console.error("Duplicate Blocked Url.", url);
             }
             else {
-                console.error("Duplicate Blocked Url.", url);
+                console.info("Blocking URL", url);
+                node[last] = 1;
+                !nosave && RESES.debounce(saveBlocked, 30);
             }
         },
         removeBlockedUrl: function removeBlockedUrl(url) {
-            var urls = LinkRegistry.blockedUrls;
-            var index = urls.indexOf(url);
-            if (index >= 0) {
+            var parts = splitUrl(url);
+            var last = parts[parts.length - 1];
+            var node = getNode(parts);
+            if (last in node) {
                 console.info("Removing Blocked URL", url);
-                urls.splice(index, 1);
-                LinkRegistry.saveBlockedUrls();
+                delete node[last];
+                RESES.debounce(saveBlocked, 30);
             }
             else {
                 console.error("Blocked Url Does not Exist and cannot be removed.", url);
             }
         },
+        import: function (json) {
+            var urls = JSON.parse(json);
+            urls.forEach(x => this.addBlockedUrl(x, true));
+            saveBlocked();
+            return this.dictBlocked;
+        },
         checkIfBlockedUrl: function checkIfBlockedUrl(url) {
-            return LinkRegistry.blockedUrls.includes(url);
+            var parts = splitUrl(url);
+            var blocked = LinkRegistry.dictBlocked;
+            for (var i = 0, len = parts.length; i < len; i++) {
+                if (!(blocked = blocked[parts[i]])) {
+                    return false;
+                }
+            }
+            return true;
         },
         registerLinkListing: function registerLinkListing(post) {
             if (post.url in _links) {
@@ -881,6 +917,9 @@ RESES.LinkListing = (() => {
         }
         if (start < 2) {
             start = 0;
+        }
+        if (url[0] === "/") {
+            start = 1;
         }
         return url.substr(start, end - start);
     }
@@ -1234,7 +1273,7 @@ RESES.ScrollingSidebar = (() => {
     return ScrollingSidebar;
 })();
 RESES.sideBarMgr = (() => {
-    var ssleft, ssright;
+    var ssleft, ssright, ssheader;
     function _update() {
         var style = {};
         if (ssleft.sled) {
@@ -1259,7 +1298,8 @@ RESES.sideBarMgr = (() => {
     RESES.onReady(sideBarMgrReady, -5);
     return {
         get leftSidebar() { return ssleft; },
-        get rightSidebar() { return ssright; }
+        get rightSidebar() { return ssright; },
+        get header() { return ssheader; }
     };
 })();
 RESES.addTabMenuButton = function addTabMenuButton(el) {

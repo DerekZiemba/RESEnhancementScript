@@ -16,3 +16,5 @@
 // ==/UserScript==
 
 GM_addStyle(GM_getResourceText("customCSS"));
+
+unsafeWindow.RESES = RESES;

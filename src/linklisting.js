@@ -6,41 +6,77 @@
 
 RESES.linkRegistry = (() => {
 	const _links = {};
-	var _blockedUrlsCache = null;
+  var _newBlockedCache = null
+  var _rgxGetHostName = /(\w{1,})(?=(?:\.[a-z]{2,4}){0,2}$)/;
+  function splitUrl(url) {
+    var parts = url.split("/").filter(x=>x);
+    try {
+      parts[0] = _rgxGetHostName.exec(parts[0])[0];
+    } catch (e) {
+      console.error(url, parts, e);
+      throw e;
+    }
 
-	const LinkRegistry = {
+    return parts;
+  }
+  function getNode(parts) {
+    var blocked = LinkRegistry.dictBlocked;
+    for (var i = 0, len = parts.length - 1; i < len; i++) {
+      let node = blocked[parts[i]];
+      if (!node) { node = blocked[parts[i]] = {}; }
+      blocked = node;
+    }
+    return blocked;
+  }
+  function saveBlocked() {
+    localStorage.setItem('reses-dictblocked', JSON.stringify(_newBlockedCache));
+  }
+  const LinkRegistry = {
+
 		get links() {
 			return _links;
 		},
-		get blockedUrls() {
-			return _blockedUrlsCache || (_blockedUrlsCache = JSON.parse(localStorage.getItem('reses-blockedurls') || '[]'));
+    get dictBlocked() {
+			return _newBlockedCache || (_newBlockedCache = JSON.parse(localStorage.getItem('reses-dictblocked') || '{}'));
 		},
-		saveBlockedUrls: function saveBlockedUrls() {
-			localStorage.setItem('reses-blockedurls', JSON.stringify(_blockedUrlsCache));
-		},
-		addBlockedUrl: function addBlockedUrl(url) {
-			var urls = LinkRegistry.blockedUrls;
-      if (!urls.includes(url)) {
-        console.info("Blocking URL", url);
-				urls.push(url);
-				LinkRegistry.saveBlockedUrls();
-      } else {
+    addBlockedUrl: function addBlockedUrl(url, nosave) {
+      var parts = splitUrl(url);
+      var last = parts[parts.length - 1];
+      var node = getNode(parts);
+
+      if (last in node) {
         console.error("Duplicate Blocked Url.", url);
-			}
+      } else {
+        console.info("Blocking URL", url);
+        node[last] = 1;
+        !nosave && RESES.debounce(saveBlocked, 30);
+      }
 		},
-		removeBlockedUrl: function removeBlockedUrl(url) {
-			var urls = LinkRegistry.blockedUrls;
-			var index = urls.indexOf(url);
-      if (index >= 0) {
+    removeBlockedUrl: function removeBlockedUrl(url) {
+      var parts = splitUrl(url);
+      var last = parts[parts.length - 1];
+      var node = getNode(parts);
+      if (last in node) {
         console.info("Removing Blocked URL", url);
-				urls.splice(index, 1);
-				LinkRegistry.saveBlockedUrls();
-			} else {
-				console.error("Blocked Url Does not Exist and cannot be removed.", url);
-			}
-		},
-		checkIfBlockedUrl: function checkIfBlockedUrl(url) {
-			return LinkRegistry.blockedUrls.includes(url);
+        delete node[last];
+        RESES.debounce(saveBlocked, 30);
+      } else {
+        console.error("Blocked Url Does not Exist and cannot be removed.", url);
+      }
+    },
+    import: function (json) {
+      var urls = JSON.parse(json);
+      urls.forEach(x => this.addBlockedUrl(x, true)); //localStorage.getItem('reses-blockedurls')
+      saveBlocked();
+      return this.dictBlocked;
+    },
+    checkIfBlockedUrl: function checkIfBlockedUrl(url) {
+      var parts = splitUrl(url);
+      var blocked = LinkRegistry.dictBlocked;
+      for (var i = 0, len = parts.length; i < len; i++) {
+        if (!(blocked = blocked[parts[i]])) { return false; }
+      }
+      return true;
 		},
 		registerLinkListing: function registerLinkListing(post) {
 			if (post.url in _links) {
@@ -107,7 +143,8 @@ RESES.LinkListing = (() => {
 		if (url[end-1] === '/'){ end--; }
 		let start = url.indexOf('www.') + 4;
 		if (start < 4) { start = url.indexOf('//') + 2; }
-		if (start < 2) { start = 0; }
+    if (start < 2) { start = 0; }
+    if (url[0] === "/") { start = 1; }
 		return url.substr(start, end - start);
 	}
 	function _sanitizeSubreddit(subreddit) {

@@ -37,6 +37,22 @@
 			}
 
 
+    #sbHeader.sidebar {
+      position: absolute;
+      top: 0;
+    }
+
+    #sbHeader .sb-handle {
+      min-height: 5px;
+      min-width: 100%;
+    }
+
+    #sbHeader .sb-track {
+      margin-top: 0px;
+      /* position: absolute;
+      width: 98vw; */
+    }
+
 		html body.with-listing-chooser .listing-chooser {	position: static; display: none; padding-right:unset;	}
 		html body.with-listing-chooser.sidebarman .listing-chooser {	display: block;	}
 

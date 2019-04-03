@@ -228,10 +228,10 @@ const RESES = window.RESES = {
         this.prev = this.current;
         this.current = fix(performance.now());
         this.elapsed = fix(this.current - this.prev);
-        if (this.remaining > 0) {
-          let finished = this.count > 0 ? " Finished" : "";
-          console.info(`AsyncOp${finished} Cycle(${this.count}): ${this.elapsed}ms. Remaining: ${this.remaining}ms. Elapsed: ${this.elapsedTotal}. Background: ${this.background}`, this, this.method);
-        }
+        // if (this.remaining > 0) {
+        //   let finished = this.count > 0 ? " Finished" : "";
+        //   console.info(`AsyncOp${finished} Cycle(${this.count}): ${this.elapsed}ms. Remaining: ${this.remaining}ms. Elapsed: ${this.elapsedTotal}. Background: ${this.background}`, this, this.method);
+        // }
         if (this.remaining > 0 || this.count == 0) {
           this.begin();
         } else {
@@ -267,9 +267,9 @@ const RESES = window.RESES = {
         this.map.delete(op.key);
         if (!this.longest || op.elapsedTotal > this.longest.elapsedTotal) { this.longest = op; }
         if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) { this.currentLongest = op; }
-        if (this.peek !== 0 && this.map.size === 0 && this.elapsed > 5) {
-          console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms. Peak: ${this.peak}. Total: ${this.total}`, this);
-        }
+        // if (this.peek !== 0 && this.map.size === 0 && this.elapsed > 5) {
+        //   console.info(`AsyncCtx.${this.name} finished evaluating in ${this.elapsed}ms. Peak: ${this.peak}. Total: ${this.total}`, this);
+        // }
         if (this.map.size === 0) {
           this.peak = 0;
           this.total = 0;
@@ -494,6 +494,10 @@ RESES.extendType(String.prototype, {
 	}
 });
 
+RESES.extendType(Array.prototype, {
+  get last() { return this[this.length - 1]; },
+  set last(value) { this[this.length - 1] = value; }
+}, { enumerable: false });
 
 RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
 	Remove: (function () {
