@@ -35,7 +35,27 @@ RESES.linkRegistry = (() => {
 
 		get links() {
 			return _links;
-		},
+    },
+    get toArray() {
+      function recurser(root) {
+        var arr = [];
+        Object.keys(root).forEach(key => {
+          let node = root[key];
+          if (node === 1) {
+            arr.push(key);
+          } else {
+            var children = recurser(node);
+            children.forEach(x => {
+              var url = key + "/" + x;
+              arr.push(url);
+            });
+          }
+        });
+        return arr;
+      }
+      var results = recurser(this.dictBlocked).sort();
+      return results;
+    },
     get dictBlocked() {
 			return _newBlockedCache || (_newBlockedCache = JSON.parse(localStorage.getItem('reses-dictblocked') || '{}'));
 		},
