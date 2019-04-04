@@ -770,7 +770,7 @@ RESES.linkRegistry = (() => {
     var _newBlockedCache = null;
     var _rgxGetHostName = /(\w{1,})(?=(?:\.[a-z]{2,4}){0,2}$)/;
     function splitUrl(url) {
-        var parts = url.split("/").filter(x => x);
+        var parts = url.split("/");
         try {
             parts[0] = _rgxGetHostName.exec(parts[0])[0];
         }
@@ -913,12 +913,12 @@ RESES.LinkListing = (() => {
         }
         RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     }
-    function _adjustFlairColor(post) {
-        var style = window.getComputedStyle(post.flairLabel);
+    function _adjustFlairColor(label) {
+        var style = window.getComputedStyle(label);
         var background = new RESES.Color(style['background-color']);
         var text = new RESES.Color(style['color']);
         if (Math.abs(background.luma - text.luma) < 100) {
-            post.flairLabel.style.color = text.inverted.toString();
+            label.style.color = text.inverted.toString();
         }
     }
     function _getHostAndPath(url) {
@@ -939,8 +939,8 @@ RESES.LinkListing = (() => {
         if (start < 2) {
             start = 0;
         }
-        if (url[0] === "/") {
-            start = 1;
+        if (url[start] === "/") {
+            start += 1;
         }
         return url.substr(start, end - start);
     }
@@ -958,16 +958,14 @@ RESES.LinkListing = (() => {
         constructor(post) {
             {
                 this.post = post;
-                this.expandoboxObserver = null;
                 this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
                 this.midcol = post.getElementsByClassName('midcol')[0] || null;
-                this.flairLabel = post.getElementsByClassName('linkflairlabel')[0] || null;
-                var ds = post.dataset;
-                this.flairLabelText = (this.flairLabel !== null && this.flairLabel.title.toLowerCase()) || null;
+                this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
+                let ds = post.dataset;
                 this.url = ds.url || null;
                 this.subreddit = ds.subreddit || null;
                 this.author = ds.author || null;
-                this.timestamp = Number(ds.timestamp);
+                this.age = Date.now() - Number(ds.timestamp);
                 this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
                 this.bIsRepost = false;
                 this.bIsBlockedURL = false;
@@ -984,9 +982,6 @@ RESES.LinkListing = (() => {
                 this.cls.add('zregistered');
             }
             {
-                if (this.flairLabel) {
-                    asyncctx.doAsync(() => _adjustFlairColor(this));
-                }
                 if (this.midcol !== null) {
                     this.midcol.addEventListener('click', this.handleVoteClick);
                 }
@@ -1015,8 +1010,13 @@ RESES.LinkListing = (() => {
                         this.bIsPorn = this.bIsPorn || filterData.pornaccounts.includes(this.author);
                     }
                 }
-                if (!this.bisAnnoying && this.flairLabelText !== null) {
-                    this.bisAnnoying = filterData.annoyingflairs.includes(this.flairLabelText);
+                if (!this.bisAnnoying && post.classList.contains("linkFlair")) {
+                    let label = post.getElementsByClassName('linkflairlabel')[0];
+                    let text = label.title.toLowerCase();
+                    this.bisAnnoying = filterData.annoyingflairs.includes(text);
+                    if (!this.bisAnnoying) {
+                        asyncctx.doAsync(() => _adjustFlairColor(label));
+                    }
                 }
                 if (this.bIsRepost) {
                     this.cls.add('isrepost');
@@ -1049,19 +1049,10 @@ RESES.LinkListing = (() => {
                     this.autoDownvotePost();
                 }
                 if (this.expandobox !== null) {
-                    this.expandoboxObserver = new MutationObserver(this.updateThumbnail);
-                    this.expandoboxObserver.observe(this.expandobox, { attributes: true });
+                    new MutationObserver(this.updateThumbnail).observe(this.expandobox, { attributes: true });
                 }
             }
             this.updateThumbnail();
-        }
-        get expandobox() {
-            var item = wm.get(this);
-            if (!item) {
-                item = this.post.getElementsByClassName('res-expando-box')[0] || this.post.getElementsByClassName('expando')[0] || null;
-                item && wm.set(this, item);
-            }
-            return item;
         }
         get voteArrowDown() {
             var item = null;
@@ -1075,7 +1066,6 @@ RESES.LinkListing = (() => {
             return item;
         }
         get cls() { return this.post.classList; }
-        get age() { return Date.now() - this.timestamp; }
         get ageHours() { return this.age / 3600000; }
         get ageDays() { return this.age / 86400000; }
         get isUpvoted() { return this.hasClass("likes") ^ this.bPending; }
