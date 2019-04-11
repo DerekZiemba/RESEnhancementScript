@@ -61,20 +61,24 @@ RESES.btnFilterPost = (() => {
 		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
 	});
 
-	btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
-		RESES.linkListingMgr.listingCollection.forEach((post) => {
-			if (post.isFilteredByRES) {
-        RESES.doAsync(() => post.autoDownvotePost());
-			}
-		});
-		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
+  btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
+    RESES.doAsync(() => {
+      RESES.linkListingMgr.listingCollection.forEach((post) => {
+        if (post.isFilteredByRES) {
+          RESES.doAsync(() => post.autoDownvotePost());
+        }
+      });
+      RESES.debounce(RESES.linkListingMgr.updateLinkListings);
+    });
 	});
 
-	btn.querySelector('#removeDownvotes').addEventListener('click', () => {
-    RESES.linkListingMgr.listingCollection.forEach((post) => {
-      RESES.doAsync(() => post.removeAutoDownvote());
-		});
-		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
+  btn.querySelector('#removeDownvotes').addEventListener('click', () => {
+    RESES.doAsync(() => {
+      RESES.linkListingMgr.listingCollection.forEach((post) => {
+        RESES.doAsync(() => post.removeAutoDownvote());
+      });
+      RESES.debounce(RESES.linkListingMgr.updateLinkListings);
+    });
 	});
 
 	const elDropdownContent = btn.querySelector('.dropdown-content');
@@ -154,7 +158,7 @@ RESES.btnFilterPost = (() => {
 	};
 })();
 
-
+console.timeEnd("RESES");
 
 // RESES.btnLoadAllComments = (() => {
 // 	var arr = null, coms = null, scrollX = 0, scrollY = 0, bGuard = false;

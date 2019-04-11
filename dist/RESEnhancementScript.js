@@ -1,5 +1,6 @@
 "use strict";
-Element.From = (function () {
+console.time("RESES");
+Element.From = Element.From || (function () {
     const rgx = /(\S+)=(["'])(.*?)(?:\2)|(\w+)/g;
     return function CreateElementFromHTML(html) {
         var innerHtmlStart = html.indexOf('>') + 1;
@@ -63,134 +64,6 @@ const RESES = window.RESES = {
         }
         return extendType;
     }()),
-    Color: (function () {
-        function toHex(num, padding) {
-            return num.toString(16).padStart(padding || 2);
-        }
-        function parsePart(value) {
-            value = value.trim();
-            var perc = value.lastIndexOf('%');
-            return perc < 0 ? value : value.substr(0, perc);
-        }
-        function normalizeComponent(value) {
-            value = parseInt(value);
-            if (value == null || isNaN(value)) {
-                return 0;
-            }
-            return value > 255 ? 255 : (value < 0 ? 0 : value);
-        }
-        function Color(data) {
-            if (!(data === undefined || data === null || isNaN(data))) {
-                if (arguments.length > 1) {
-                    this.r = arguments[0];
-                    this.g = arguments[1];
-                    this.b = arguments[2];
-                    if (arguments.length > 3) {
-                        this.a = arguments[3];
-                    }
-                }
-                else if (typeof data === 'string') {
-                    data = data.trim().toLowerCase();
-                    if (data[0] === '#') {
-                        switch (data.length) {
-                            case 9:
-                                this[3] = parseInt(data.substr(7, 2), 16);
-                            case 7:
-                                this[0] = parseInt(data.substr(1, 2), 16);
-                                this[1] = parseInt(data.substr(3, 2), 16);
-                                this[2] = parseInt(data.substr(5, 2), 16);
-                                break;
-                            case 4:
-                                this[0] = parseInt(data[1], 16);
-                                this[0] = (this[0] << 4) | this[0];
-                                this[1] = parseInt(data[2], 16);
-                                this[1] = (this[1] << 4) | this[1];
-                                this[2] = parseInt(data[3], 16);
-                                this[2] = (this[2] << 4) | this[2];
-                                break;
-                            default:
-                                throw new Error(`Invalid Hex Color: ${data}`);
-                        }
-                    }
-                    else if (data.startsWith("rgb")) {
-                        var parts = (data[3] === 'a' ? data.substr(5, data.length - 6) : data.substr(4, data.length - 5)).split(',');
-                        this.r = parsePart(parts[0]);
-                        this.g = parsePart(parts[1]);
-                        this.b = parsePart(parts[2]);
-                        if (parts.length > 3) {
-                            this.a = parsePart(parts[3]);
-                        }
-                    }
-                    else {
-                        throw new Error(`Invalid Color String: ${data}`);
-                    }
-                }
-                else if (data instanceof Color) {
-                    this[0] = data[0];
-                    this[1] = data[1];
-                    this[2] = data[2];
-                    this[3] = data[3];
-                }
-                else if (Array.isArray(data)) {
-                    this.r = data[0];
-                    this.g = data[1];
-                    this.b = data[2];
-                    if (data.length > 3) {
-                        this.a = data[3];
-                    }
-                }
-            }
-        }
-        Color.prototype = {
-            constructor: Color,
-            0: 255,
-            1: 255,
-            2: 255,
-            3: 255,
-            get length() { return this[3] === 255 ? 3 : 4; },
-            get r() { return this[0]; },
-            set r(value) { this[0] = normalizeComponent(value); },
-            get g() { return this[1]; },
-            set g(value) { this[1] = normalizeComponent(value); },
-            get b() { return this[2]; },
-            set b(value) { this[2] = normalizeComponent(value); },
-            get a() { return this[3] / 255; },
-            set a(value) {
-                value = parseFloat(value);
-                if (!(value == null || isNaN(value))) {
-                    if (value < 1) {
-                        value = value * 255;
-                    }
-                    value = Math.floor(value);
-                    this[3] = value > 255 ? 255 : (value < 0 ? 0 : value);
-                }
-            },
-            get luma() { return .299 * this.r + .587 * this.g + .114 * this.b; },
-            get inverted() { return new Color(255 - this[0], 255 - this[1], 255 - this[2], this[3]); },
-            toString: function (option) {
-                if (option === 16) {
-                    return '#' + toHex(this.r) + toHex(this.g) + toHex(this.b) + (this[3] === 255 ? '' : toHex(this[3]));
-                }
-                else if (option === '%') {
-                    if (this.a !== 1) {
-                        return `rgba(${this.r / 255 * 100}%, ${this.b / 255 * 100}%, ${this.g / 255 * 100}%, ${this.a / 255})`;
-                    }
-                    else {
-                        return `rgb(${this.r / 255 * 100}%, ${this.b / 255 * 100}%, ${this.g / 255 * 100})%`;
-                    }
-                }
-                else {
-                    if (this.a !== 1) {
-                        return `rgba(${this.r}, ${this.b}, ${this.g}, ${this.a})`;
-                    }
-                    else {
-                        return `rgb(${this.r}, ${this.b}, ${this.g})`;
-                    }
-                }
-            }
-        };
-        return Color;
-    }()),
     getNonStandardWindowProperties: function getNonStandardWindowProperties(win, bAsArray) {
         if (typeof win === 'boolean') {
             bAsArray = win;
@@ -209,193 +82,51 @@ const RESES = window.RESES = {
         document.body.removeChild(iframe);
         return result;
     },
-    AsyncCtx: (() => {
-        function fix(num, div = 1000) { return Math.trunc(num * div) / div; }
-        class AsyncOp {
-            constructor(owner, key, delay, method) {
-                this.delay = +(delay || 0);
-                this.elapsed = +0;
-                this.count = -1 | 0;
-                this.background = false;
-                this.timer = 0 | 0;
-                this.key = key || this;
-                this.method = method;
-                this.owner = owner;
-                this.start = fix(performance.now());
-                this.prev = this.start;
-                this.current = this.start;
-                this.tick = () => this._tick();
-            }
-            get remaining() { return Math.trunc(this.delay - (this.current - this.start)); }
-            get elapsedTotal() { return fix(this.current - this.start); }
-            cancel() {
-                this.background === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer);
-            }
-            begin() {
-                this.background = document.hidden;
-                this.timer = this.background === true ? window.setTimeout(this.tick, this.delay) : window.requestAnimationFrame(this.tick);
-            }
-            _tick() {
-                this.count++;
-                this.prev = this.current;
-                this.current = fix(performance.now());
-                this.elapsed = fix(this.current - this.prev);
-                if (this.remaining > 0 || this.count == 0) {
-                    this.begin();
-                }
-                else {
-                    this.method(this);
-                    this.owner.free(this);
-                }
-            }
-        }
-        class AsyncCtx {
-            constructor(name) {
-                this.name = name;
-                this.peak = 0;
-                this.total = 0;
-                this.allTotal = 0;
-                this.longest = null;
-                this.currentLongest = null;
-                this.starttime = 0;
-                this.map = new Map();
-            }
-            get elapsed() { return fix(performance.now() - this.starttime); }
-            track(op) {
-                if (this.map.size === 0) {
-                    this.starttime = performance.now();
-                    this.currentLongest = null;
-                }
-                this.map.set(op.key, op);
-                this.peak = Math.max(this.peak, this.map.size);
-                this.total++;
-                this.allTotal++;
-            }
-            free(op) {
-                this.map.delete(op.key);
-                if (!this.longest || op.elapsedTotal > this.longest.elapsedTotal) {
-                    this.longest = op;
-                }
-                if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) {
-                    this.currentLongest = op;
-                }
-                if (this.map.size === 0) {
-                    this.peak = 0;
-                    this.total = 0;
-                }
-            }
-            doAsync(func, delay) {
-                var op = new AsyncOp(this, null, delay, func);
-                this.track(op);
-                op.tick();
-                return op;
-            }
-            debounce(method, delay) {
-                var op = this.map.get(method);
-                if (op !== undefined) {
-                    op.cancel();
-                }
-                else {
-                    op = new AsyncOp(this, method, delay, method);
-                    this.track(op);
-                }
-                op.begin();
-            }
-        }
-        AsyncCtx.default = new AsyncCtx("Default");
-        AsyncCtx.AsyncOp = AsyncOp;
-        return AsyncCtx;
-    })(),
-    doAsync: function defaultDoAsync(func, delay = 0) {
-        return RESES.AsyncCtx.default.doAsync(func, delay);
+    isFirefox: navigator.userAgent.includes("Firefox"),
+    get bIsMultireddit() {
+        delete this.bIsMultireddit;
+        return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
     },
-    debounce: function defaultDebounce(method, delay) {
-        return RESES.AsyncCtx.default.debounce(method, delay);
-    }
+    bIsCommentPage: window.location.pathname.includes('/comments/'),
+    bIsUserPage: window.location.pathname.includes('/user/'),
+    subreddit: ((m) => m && m[1] ? m[1].toLocaleLowerCase() : null)(/^\/(?:r\/(\w+)\/)/.exec(window.location.pathname)),
+    config: (function localSettings() {
+        const cache = {};
+        function getSetting(key, _default) {
+            if (cache[key] !== undefined) {
+                return cache[key];
+            }
+            var setting = JSON.parse(localStorage.getItem('reses-' + key) || _default.toString());
+            cache[key] = setting;
+            return setting;
+        }
+        function setSetting(key, value) {
+            if (arguments.length === 1) {
+                value = cache[key];
+            }
+            else {
+                cache[key] = value;
+            }
+            localStorage.setItem('reses-' + key, JSON.stringify(value));
+        }
+        return {
+            getSetting,
+            setSetting,
+            get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
+            set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
+            get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
+            set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
+            get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
+            set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
+        };
+    })()
 };
-(function initListeners(RESES) {
-    let context = RESES.AsyncCtx.default;
-    var _initCalls = [];
-    var _readyCalls = [];
-    var _loadedCalls = [];
-    window.addEventListener("load", windowLoaded);
-    if (document.readyState !== "loading") {
-        console.info("RESES loaded during weird document state.", document.readyState);
-        RESES.doAsync(documentReady);
-    }
-    else {
-        window.addEventListener("DOMContentLoaded", documentReady);
-    }
-    function comparer(a, b) { return a.priority - b.priority; }
-    function initialize() {
-        if (_initCalls !== null) {
-            _initCalls.sort(comparer);
-            while (_initCalls.length > 0) {
-                let call = _initCalls.shift();
-                let func = call.method;
-                func();
-            }
-            _initCalls = null;
-        }
-    }
-    function documentReady() {
-        let h2 = document.body.querySelector("h2");
-        if (h2 && h2.textContent === "all of our servers are busy right now") {
-            location.reload();
-        }
-        else {
-            initialize();
-            _readyCalls.sort(comparer);
-            while (_readyCalls.length > 0) {
-                let call = _readyCalls.shift();
-                let func = call.method;
-                context.doAsync(func);
-            }
-        }
-        _readyCalls = null;
-    }
-    function windowLoaded() {
-        if (_readyCalls !== null) {
-            RESES.onReady(windowLoaded, 1000);
-        }
-        else {
-            if (_loadedCalls !== null) {
-                _loadedCalls.sort(comparer);
-                while (_loadedCalls.length > 0) {
-                    let call = _loadedCalls.shift();
-                    let func = call.method;
-                    context.doAsync(func);
-                }
-                _loadedCalls = null;
-            }
-        }
-    }
-    RESES.onInit = function (method, priority = 100) {
-        if (_initCalls !== null) {
-            _initCalls.push({ priority, method });
-            context.debounce(initialize);
-        }
-        else {
-            throw new Error("Initialization already in progress. Too late to call onInit.");
-        }
-    };
-    RESES.onReady = function (method, priority = 100) {
-        if (_readyCalls !== null) {
-            _readyCalls.push({ priority, method });
-        }
-        else {
-            context.doAsync(method);
-        }
-    };
-    RESES.onLoaded = function (method, priority = 100) {
-        if (_loadedCalls !== null) {
-            _loadedCalls.push({ priority, method });
-        }
-        else {
-            context.doAsync(method);
-        }
-    };
-})(RESES);
+if (this.window) {
+    this.window.RESES = RESES;
+}
+if (this.unsafeWindow) {
+    this.unsafeWindow.RESES = RESES;
+}
 RESES.extendType(String.prototype, {
     ReplaceAll: function ReplaceAll(sequence, value) {
         return this.split(sequence).join(value);
@@ -545,42 +276,333 @@ RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
         }
     }
 });
-RESES.bIsCommentPage = window.location.pathname.includes('/comments/');
-RESES.bIsUserPage = window.location.pathname.includes('/user/');
-RESES.subreddit = (() => {
-    var m = /^\/(?:r\/(\w+)\/)/.exec(window.location.pathname);
-    return m && m[1] ? m[1].toLocaleLowerCase() : null;
-})();
-RESES.config = (function localSettings() {
-    const cache = {};
-    function getSetting(key, _default) {
-        if (cache[key] !== undefined) {
-            return cache[key];
+console.time("RESES.initialize");
+console.time("RESES.documentReady");
+console.time("RESES.windowLoaded");
+RESES.AsyncCtx = (() => {
+    function fix(num, div = 1000) { return Math.trunc(num * div) / div; }
+    class AsyncOp {
+        constructor(owner, key, delay, method) {
+            this.delay = +(delay || 0);
+            this.elapsed = +0;
+            this.count = -1 | 0;
+            this.timer = 0 | 0;
+            this.background = false;
+            this.key = key || this;
+            this.method = method;
+            this.owner = owner;
+            this.start = fix(performance.now());
+            this.prev = this.start;
+            this.current = this.start;
+            this.tick = () => this._tick();
         }
-        var value = localStorage.getItem('reses-' + key);
-        var setting = JSON.parse(value || _default.toString());
-        cache[key] = setting;
-        return setting;
+        get remaining() { return Math.trunc(this.delay - (this.current - this.start)); }
+        get elapsedTotal() { return fix(this.current - this.start); }
+        cancel() {
+            this.background === true ? window.clearTimeout(this.timer) : window.cancelAnimationFrame(this.timer);
+        }
+        begin(forceBackground) {
+            this.background = forceBackground || document.hidden;
+            this.timer = this.background === true ? window.setTimeout(this.tick, this.delay) : window.requestAnimationFrame(this.tick);
+        }
+        _tick() {
+            this.count++;
+            this.prev = this.current;
+            this.current = fix(performance.now());
+            this.elapsed = fix(this.current - this.prev);
+            if (this.remaining > 0 || this.count == 0) {
+                this.begin();
+            }
+            else {
+                this.method(this);
+                this.owner.free(this);
+            }
+        }
     }
-    function setSetting(key, value) {
-        cache[key] = value;
-        localStorage.setItem('reses-' + key, JSON.stringify(value));
+    class AsyncCtx {
+        constructor(name) {
+            this.name = name;
+            this.peak = 0;
+            this.total = 0;
+            this.allTotal = 0;
+            this.longest = null;
+            this.currentLongest = null;
+            this.starttime = 0;
+            this.map = new Map();
+        }
+        get elapsed() { return fix(performance.now() - this.starttime); }
+        track(op) {
+            if (this.map.size === 0) {
+                this.starttime = performance.now();
+                this.currentLongest = null;
+            }
+            this.map.set(op.key, op);
+            this.peak = Math.max(this.peak, this.map.size);
+            this.total++;
+            this.allTotal++;
+        }
+        free(op) {
+            this.map.delete(op.key);
+            if (!this.longest || op.elapsedTotal > this.longest.elapsedTotal) {
+                this.longest = op;
+            }
+            if (!this.currentLongest || op.elapsedTotal > this.currentLongest.elapsedTotal) {
+                this.currentLongest = op;
+            }
+            if (this.map.size === 0) {
+                this.peak = 0;
+                this.total = 0;
+            }
+        }
+        doAsync(func, delay) {
+            var op = new AsyncOp(this, null, delay, func);
+            this.track(op);
+            op.tick();
+            return op;
+        }
+        debounce(method, delay, forceBackground) {
+            if (RESES.isFirefox && !delay) {
+                delay = 1;
+            }
+            var op = this.map.get(method);
+            if (op !== undefined) {
+                op.cancel();
+            }
+            else {
+                op = new AsyncOp(this, method, delay, method);
+                this.track(op);
+            }
+            op.begin(forceBackground);
+        }
     }
-    return {
-        get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
-        set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
-        get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
-        set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
-        get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
-        set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
-    };
+    AsyncCtx.default = new AsyncCtx("Default");
+    AsyncCtx.AsyncOp = AsyncOp;
+    return AsyncCtx;
 })();
-RESES.extendType(RESES, {
-    get bIsMultireddit() {
-        delete this.bIsMultireddit;
-        return (this.bIsMultireddit = document.body.classList.contains('multi-page'));
+(function initializer(RESES) {
+    let context = RESES.AsyncCtx.default;
+    var _initCalls = [];
+    var _readyCalls = [];
+    var _loadedCalls = [];
+    function comparer(a, b) { return a.priority - b.priority; }
+    function initialize() {
+        if (_initCalls !== null) {
+            _initCalls.sort(comparer);
+            while (_initCalls.length > 0) {
+                let call = _initCalls.shift();
+                let func = call.method;
+                func();
+            }
+            _initCalls = null;
+            console.timeEnd("RESES.initialize");
+        }
     }
-});
+    function documentReady() {
+        let h2 = document.body.querySelector("h2");
+        if (h2 && h2.textContent === "all of our servers are busy right now") {
+            location.reload();
+        }
+        else {
+            initialize();
+            _readyCalls.sort(comparer);
+            while (_readyCalls.length > 0) {
+                let call = _readyCalls.shift();
+                let func = call.method;
+                context.doAsync(func);
+            }
+            console.timeEnd("RESES.documentReady");
+        }
+        _readyCalls = null;
+        if (!RESES.isFirefox) {
+            windowLoaded();
+        }
+    }
+    function windowLoaded() {
+        if (_readyCalls !== null) {
+            RESES.onReady(windowLoaded, 1000);
+        }
+        else {
+            if (_loadedCalls !== null) {
+                _loadedCalls.sort(comparer);
+                while (_loadedCalls.length > 0) {
+                    let call = _loadedCalls.shift();
+                    let func = call.method;
+                    context.doAsync(func);
+                }
+                _loadedCalls = null;
+                console.timeEnd("RESES.windowLoaded");
+            }
+        }
+    }
+    window.addEventListener("load", windowLoaded);
+    if (document.readyState !== "loading") {
+        console.info("RESES loaded in late state.", document.readyState);
+        documentReady();
+    }
+    else {
+        window.addEventListener("DOMContentLoaded", documentReady);
+    }
+    RESES.doAsync = function defaultDoAsync(func, delay = 0) {
+        return context.doAsync(func, delay);
+    };
+    RESES.debounce = function defaultDebounce(method, delay, forceBackground) {
+        return context.debounce(method, delay, forceBackground);
+    };
+    RESES.onInit = function (method, priority = 100) {
+        if (_initCalls !== null) {
+            _initCalls.push({ priority, method });
+            context.debounce(initialize, 0, true);
+        }
+        else {
+            console.error("Initialization already in progress. Too late to call onInit.", method, _initCalls);
+            method();
+        }
+    };
+    RESES.onReady = function (method, priority = 100) {
+        if (_readyCalls !== null) {
+            _readyCalls.push({ priority, method });
+        }
+        else {
+            context.doAsync(method);
+        }
+    };
+    RESES.onLoaded = function (method, priority = 100) {
+        if (_loadedCalls !== null) {
+            _loadedCalls.push({ priority, method });
+        }
+        else {
+            context.doAsync(method);
+        }
+    };
+})(RESES);
+RESES.Color = (function () {
+    function toHex(num, padding) {
+        return num.toString(16).padStart(padding || 2);
+    }
+    function parsePart(value) {
+        value = value.trim();
+        var perc = value.lastIndexOf('%');
+        return perc < 0 ? value : value.substr(0, perc);
+    }
+    function normalizeComponent(value) {
+        value = parseInt(value);
+        if (value == null || isNaN(value)) {
+            return 0;
+        }
+        return value > 255 ? 255 : (value < 0 ? 0 : value);
+    }
+    function Color(data) {
+        if (!(data === undefined || data === null || isNaN(data))) {
+            if (arguments.length > 1) {
+                this.r = arguments[0];
+                this.g = arguments[1];
+                this.b = arguments[2];
+                if (arguments.length > 3) {
+                    this.a = arguments[3];
+                }
+            }
+            else if (typeof data === 'string') {
+                data = data.trim().toLowerCase();
+                if (data[0] === '#') {
+                    switch (data.length) {
+                        case 9:
+                            this[3] = parseInt(data.substr(7, 2), 16);
+                        case 7:
+                            this[0] = parseInt(data.substr(1, 2), 16);
+                            this[1] = parseInt(data.substr(3, 2), 16);
+                            this[2] = parseInt(data.substr(5, 2), 16);
+                            break;
+                        case 4:
+                            this[0] = parseInt(data[1], 16);
+                            this[0] = (this[0] << 4) | this[0];
+                            this[1] = parseInt(data[2], 16);
+                            this[1] = (this[1] << 4) | this[1];
+                            this[2] = parseInt(data[3], 16);
+                            this[2] = (this[2] << 4) | this[2];
+                            break;
+                        default:
+                            throw new Error(`Invalid Hex Color: ${data}`);
+                    }
+                }
+                else if (data.startsWith("rgb")) {
+                    var parts = (data[3] === 'a' ? data.substr(5, data.length - 6) : data.substr(4, data.length - 5)).split(',');
+                    this.r = parsePart(parts[0]);
+                    this.g = parsePart(parts[1]);
+                    this.b = parsePart(parts[2]);
+                    if (parts.length > 3) {
+                        this.a = parsePart(parts[3]);
+                    }
+                }
+                else {
+                    throw new Error(`Invalid Color String: ${data}`);
+                }
+            }
+            else if (data instanceof Color) {
+                this[0] = data[0];
+                this[1] = data[1];
+                this[2] = data[2];
+                this[3] = data[3];
+            }
+            else if (Array.isArray(data)) {
+                this.r = data[0];
+                this.g = data[1];
+                this.b = data[2];
+                if (data.length > 3) {
+                    this.a = data[3];
+                }
+            }
+        }
+    }
+    Color.prototype = {
+        constructor: Color,
+        0: 255,
+        1: 255,
+        2: 255,
+        3: 255,
+        get length() { return this[3] === 255 ? 3 : 4; },
+        get r() { return this[0]; },
+        set r(value) { this[0] = normalizeComponent(value); },
+        get g() { return this[1]; },
+        set g(value) { this[1] = normalizeComponent(value); },
+        get b() { return this[2]; },
+        set b(value) { this[2] = normalizeComponent(value); },
+        get a() { return this[3] / 255; },
+        set a(value) {
+            value = parseFloat(value);
+            if (!(value == null || isNaN(value))) {
+                if (value < 1) {
+                    value = value * 255;
+                }
+                value = Math.floor(value);
+                this[3] = value > 255 ? 255 : (value < 0 ? 0 : value);
+            }
+        },
+        get luma() { return .299 * this.r + .587 * this.g + .114 * this.b; },
+        get inverted() { return new Color(255 - this[0], 255 - this[1], 255 - this[2], this[3]); },
+        toString: function (option) {
+            if (option === 16) {
+                return '#' + toHex(this.r) + toHex(this.g) + toHex(this.b) + (this[3] === 255 ? '' : toHex(this[3]));
+            }
+            else if (option === '%') {
+                if (this.a !== 1) {
+                    return `rgba(${this.r / 255 * 100}%, ${this.b / 255 * 100}%, ${this.g / 255 * 100}%, ${this.a / 255})`;
+                }
+                else {
+                    return `rgb(${this.r / 255 * 100}%, ${this.b / 255 * 100}%, ${this.g / 255 * 100})%`;
+                }
+            }
+            else {
+                if (this.a !== 1) {
+                    return `rgba(${this.r}, ${this.b}, ${this.g}, ${this.a})`;
+                }
+                else {
+                    return `rgb(${this.r}, ${this.b}, ${this.g})`;
+                }
+            }
+        }
+    };
+    return Color;
+}());
 RESES.filterData = {
     karmawhores: [
         'SlimJones123', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
@@ -762,12 +784,11 @@ RESES.filterData = {
         "AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
         "LateStageCapitalizm", "MarcheAgainstTrump", "MarchAgainstNazis", "Political_Revolution", "politics", "RussiaLago",
         "ShitThe_DonaldSays", "The_Dotard", "Trumpgret", "PoliticalHumor", "The_Mueller", "SandersForPresident",
-        "EnoughTrumpSpam", "TrumpCriticizesTrump"
+        "EnoughTrumpSpam", "TrumpCriticizesTrump", "MurderedByWords"
     ].map(x => x && x.toLowerCase())
 };
 RESES.linkRegistry = (() => {
     const _links = {};
-    var _newBlockedCache = null;
     var _rgxGetHostName = /(\w{1,})(?=(?:\.[a-z]{2,4}){0,2}$)/;
     function splitUrl(url) {
         var parts = url.split("/");
@@ -792,12 +813,13 @@ RESES.linkRegistry = (() => {
         return blocked;
     }
     function saveBlocked() {
-        localStorage.setItem('reses-dictblocked', JSON.stringify(_newBlockedCache));
+        RESES.config.setSetting("dictblocked");
     }
     const LinkRegistry = {
         get links() {
             return _links;
         },
+        get dictBlocked() { return RESES.config.getSetting('dictblocked', '{}'); },
         get toArray() {
             function recurser(root) {
                 var arr = [];
@@ -818,9 +840,6 @@ RESES.linkRegistry = (() => {
             }
             var results = recurser(this.dictBlocked).sort();
             return results;
-        },
-        get dictBlocked() {
-            return _newBlockedCache || (_newBlockedCache = JSON.parse(localStorage.getItem('reses-dictblocked') || '{}'));
         },
         addBlockedUrl: function addBlockedUrl(url, nosave) {
             var parts = splitUrl(url);
@@ -956,127 +975,109 @@ RESES.LinkListing = (() => {
     const wm = new WeakMap();
     class LinkListing {
         constructor(post) {
-            {
-                this.post = post;
-                this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
-                this.midcol = post.getElementsByClassName('midcol')[0] || null;
-                this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
-                let ds = post.dataset;
-                this.url = ds.url || null;
-                this.subreddit = ds.subreddit || null;
-                this.author = ds.author || null;
-                this.age = Date.now() - Number(ds.timestamp);
-                this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
-                this.bIsRepost = false;
-                this.bIsBlockedURL = false;
-                this.bIsKarmaWhore = false;
-                this.bIsPorn = false;
-                this.bIsAnime = false;
-                this.bIsAnnoying = false;
-                this.bIsPolitics = false;
-                this.bIsShow = false;
-                this.bIsGame = false;
-                this.bPending = false;
-                this.updateThumbnail = () => _updateThumbnail(this);
-                this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
-                this.cls.add('zregistered');
+            this.post = post;
+            this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
+            this.midcol = post.getElementsByClassName('midcol')[0] || null;
+            this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
+            let ds = post.dataset;
+            this.url = ds.url || null;
+            this.subreddit = ds.subreddit || null;
+            this.author = ds.author || null;
+            this.age = Date.now() - Number(ds.timestamp);
+            this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
+            this.bIsRepost = false;
+            this.bIsBlockedURL = false;
+            this.bIsKarmaWhore = false;
+            this.bIsPorn = false;
+            this.bIsAnime = false;
+            this.bIsAnnoying = false;
+            this.bIsPolitics = false;
+            this.bIsShow = false;
+            this.bIsGame = false;
+            this.bPending = false;
+            this.updateThumbnail = () => _updateThumbnail(this);
+            this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
+            this.cls.add('zregistered');
+            if (this.midcol !== null) {
+                this.midcol.addEventListener('click', this.handleVoteClick);
             }
-            {
-                if (this.midcol !== null) {
-                    this.midcol.addEventListener('click', this.handleVoteClick);
+            if (this.url !== null) {
+                this.url = _getHostAndPath(this.url);
+                if (this.url.length > 0) {
+                    this.bIsBlockedURL = checkIfBlockedUrl(this.url);
+                    this.bIsRepost = registerLinkListing(this);
                 }
-                if (this.url !== null) {
-                    this.url = _getHostAndPath(this.url);
-                    if (this.url.length > 0) {
-                        this.bIsBlockedURL = checkIfBlockedUrl(this.url);
-                        this.bIsRepost = registerLinkListing(this);
-                    }
+            }
+            if (this.subreddit !== null) {
+                this.subreddit = _sanitizeSubreddit(this.subreddit);
+                if (!this.bIsTextPost) {
+                    this.bIsPorn = filterData.pornsubs.includes(this.subreddit) || filterData.pornaccounts.includes(this.subreddit);
                 }
-                if (this.subreddit !== null) {
-                    this.subreddit = _sanitizeSubreddit(this.subreddit);
-                    if (!this.bIsTextPost) {
-                        this.bIsPorn = filterData.pornsubs.includes(this.subreddit) || filterData.pornaccounts.includes(this.subreddit);
-                    }
-                    this.bIsAnime = filterData.animesubs.includes(this.subreddit);
-                    this.bIsAnnoying = filterData.annoyingsubs.includes(this.subreddit);
-                    this.bIsShow = filterData.shows.includes(this.subreddit);
-                    this.bIsGame = filterData.games.includes(this.subreddit);
-                    this.bIsPolitics = filterData.politics.includes(this.subreddit);
+                this.bIsAnime = filterData.animesubs.includes(this.subreddit);
+                this.bIsAnnoying = filterData.annoyingsubs.includes(this.subreddit);
+                this.bIsShow = filterData.shows.includes(this.subreddit);
+                this.bIsGame = filterData.games.includes(this.subreddit);
+                this.bIsPolitics = filterData.politics.includes(this.subreddit);
+            }
+            if (this.author !== null) {
+                this.author = this.author.toLowerCase();
+                this.bIsKarmaWhore = filterData.karmawhores.includes(this.author);
+                if (!this.bIsTextPost) {
+                    this.bIsPorn = this.bIsPorn || filterData.pornaccounts.includes(this.author);
                 }
-                if (this.author !== null) {
-                    this.author = this.author.toLowerCase();
-                    this.bIsKarmaWhore = filterData.karmawhores.includes(this.author);
-                    if (!this.bIsTextPost) {
-                        this.bIsPorn = this.bIsPorn || filterData.pornaccounts.includes(this.author);
-                    }
+            }
+            if (!this.bisAnnoying && post.classList.contains("linkFlair")) {
+                let label = post.getElementsByClassName('linkflairlabel')[0];
+                let text = label.title.toLowerCase();
+                this.bisAnnoying = filterData.annoyingflairs.includes(text);
+                if (!this.bisAnnoying) {
+                    asyncctx.doAsync(() => _adjustFlairColor(label));
                 }
-                if (!this.bisAnnoying && post.classList.contains("linkFlair")) {
-                    let label = post.getElementsByClassName('linkflairlabel')[0];
-                    let text = label.title.toLowerCase();
-                    this.bisAnnoying = filterData.annoyingflairs.includes(text);
-                    if (!this.bisAnnoying) {
-                        asyncctx.doAsync(() => _adjustFlairColor(label));
-                    }
-                }
-                if (this.bIsRepost) {
-                    this.cls.add('isrepost');
-                }
-                if (this.bIsBlockedURL) {
-                    this.cls.add('isblockedurl');
-                }
-                if (this.bIsPorn) {
-                    this.cls.add('isporn');
-                }
-                if (this.bIsAnime) {
-                    this.cls.add('isanime');
-                }
-                if (this.bIsKarmaWhore) {
-                    this.cls.add('iskarmawhore');
-                }
-                if (this.bIsAnnoying) {
-                    this.cls.add('isannoying');
-                }
-                if (this.bIsShow) {
-                    this.cls.add('isshow');
-                }
-                if (this.bIsGame) {
-                    this.cls.add('isgame');
-                }
-                if (this.bIsPolitics) {
-                    this.cls.add('ispolitics');
-                }
-                if (this.shouldBeDownvoted) {
-                    this.autoDownvotePost();
-                }
-                if (this.expandobox !== null) {
-                    new MutationObserver(this.updateThumbnail).observe(this.expandobox, { attributes: true });
-                }
+            }
+            if (this.bIsRepost) {
+                this.cls.add('isrepost');
+            }
+            if (this.bIsBlockedURL) {
+                this.cls.add('isblockedurl');
+            }
+            if (this.bIsPorn) {
+                this.cls.add('isporn');
+            }
+            if (this.bIsAnime) {
+                this.cls.add('isanime');
+            }
+            if (this.bIsKarmaWhore) {
+                this.cls.add('iskarmawhore');
+            }
+            if (this.bIsAnnoying) {
+                this.cls.add('isannoying');
+            }
+            if (this.bIsShow) {
+                this.cls.add('isshow');
+            }
+            if (this.bIsGame) {
+                this.cls.add('isgame');
+            }
+            if (this.bIsPolitics) {
+                this.cls.add('ispolitics');
+            }
+            if (this.shouldBeDownvoted) {
+                this.autoDownvotePost();
+            }
+            if (this.expandobox !== null) {
+                new MutationObserver(this.updateThumbnail).observe(this.expandobox, { attributes: true });
             }
             this.updateThumbnail();
-        }
-        get voteArrowDown() {
-            var item = null;
-            if (this.midcol !== null) {
-                item = wm.get(this.midcol);
-                if (!item) {
-                    item = this.midcol.getElementsByClassName('arrow')[1] || null;
-                    item && wm.set(this.midcol, item);
-                }
-            }
-            return item;
         }
         get cls() { return this.post.classList; }
         get ageHours() { return this.age / 3600000; }
         get ageDays() { return this.age / 86400000; }
-        get isUpvoted() { return this.hasClass("likes") ^ this.bPending; }
-        get isUnvoted() { return this.hasClass("unvoted") ^ this.bPending; }
-        get isDownvoted() { return this.hasClass("dislikes") ^ this.bPending; }
+        get isUpvoted() { return Boolean(this.hasClass("likes") ^ this.bPending); }
+        get isUnvoted() { return Boolean(this.hasClass("unvoted") ^ this.bPending); }
+        get isDownvoted() { return Boolean(this.hasClass("dislikes") ^ this.bPending); }
         get isExpanded() {
             var expando = this.expandobox;
-            if (expando !== null) {
-                return expando.dataset.cachedhtml ? expando.style.display !== 'none' : expando.getAttribute('hidden') === null;
-            }
-            return false;
+            return expando && expando.firstElementChild && expando.firstElementChild.firstElementChild && !(expando.style.display === 'none' || expando.hasAttribute('hidden'));
         }
         get isCrosspost() { return parseInt(this.post.dataset.numCrossposts) > 0; }
         get isNSFW() { return this.cls.contains('over18'); }
@@ -1088,6 +1089,17 @@ RESES.LinkListing = (() => {
         }
         get shouldBeDownvoted() {
             return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
+        }
+        get voteArrowDown() {
+            var item = null;
+            if (this.midcol !== null) {
+                item = wm.get(this.midcol);
+                if (!item) {
+                    item = this.midcol.getElementsByClassName('arrow')[1] || null;
+                    item && wm.set(this.midcol, item);
+                }
+            }
+            return item;
         }
         hasClass(classes) {
             for (let i = 0, len = arguments.length; i < len; i++) {
@@ -1134,23 +1146,27 @@ RESES.linkListingMgr = (() => {
     const _listingCollection = Array(1000);
     _listingCollection.index = 0;
     var linklistingObserver = null;
+    var block_updateLinkListings = false;
     function _updateLinkListings() {
-        var good = 0, filtered = 0, shit = 0;
-        for (var i = 0, len = _listingCollection.index, posts = _listingCollection; i < len; i++) {
-            var post = posts[i];
-            if (post.isDownvoted) {
-                shit++;
+        if (!block_updateLinkListings) {
+            var good = 0, filtered = 0, shit = 0;
+            for (var i = 0, len = _listingCollection.index, posts = _listingCollection; i < len; i++) {
+                var post = posts[i];
+                if (post.isDownvoted) {
+                    shit++;
+                }
+                else if (post.isFilteredByRES) {
+                    filtered++;
+                }
+                else {
+                    good++;
+                }
             }
-            else if (post.isFilteredByRES) {
-                filtered++;
-            }
-            else {
-                good++;
-            }
+            RESES.btnFilterPost.update({ good, filtered, shit });
         }
-        RESES.btnFilterPost.update({ good, filtered, shit });
     }
     function _processNewLinkListings() {
+        block_updateLinkListings = true;
         console.time("ProcessNewLinkListings");
         var linklisting = _newLinkListings.pop();
         while (linklisting) {
@@ -1163,7 +1179,8 @@ RESES.linkListingMgr = (() => {
             }
             linklisting = _newLinkListings.pop();
         }
-        RESES.debounce(_updateLinkListings);
+        block_updateLinkListings = false;
+        _updateLinkListings();
         console.timeEnd("ProcessNewLinkListings");
     }
     function _handleLinkListingMutation(mutations) {
@@ -1190,9 +1207,7 @@ RESES.linkListingMgr = (() => {
             RESES.debounce(_processNewLinkListings);
             var showimages = document.getElementsByClassName('res-show-images')[0];
             if (showimages) {
-                showimages.addEventListener('click', () => {
-                    RESES.doAsync(_updateLinkListings);
-                });
+                showimages.addEventListener('click', () => _updateLinkListings());
             }
         }
     }
@@ -1373,18 +1388,22 @@ RESES.btnFilterPost = (() => {
         RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
     btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
-        RESES.linkListingMgr.listingCollection.forEach((post) => {
-            if (post.isFilteredByRES) {
-                RESES.doAsync(() => post.autoDownvotePost());
-            }
+        RESES.doAsync(() => {
+            RESES.linkListingMgr.listingCollection.forEach((post) => {
+                if (post.isFilteredByRES) {
+                    RESES.doAsync(() => post.autoDownvotePost());
+                }
+            });
+            RESES.debounce(RESES.linkListingMgr.updateLinkListings);
         });
-        RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
     btn.querySelector('#removeDownvotes').addEventListener('click', () => {
-        RESES.linkListingMgr.listingCollection.forEach((post) => {
-            RESES.doAsync(() => post.removeAutoDownvote());
+        RESES.doAsync(() => {
+            RESES.linkListingMgr.listingCollection.forEach((post) => {
+                RESES.doAsync(() => post.removeAutoDownvote());
+            });
+            RESES.debounce(RESES.linkListingMgr.updateLinkListings);
         });
-        RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
     const elDropdownContent = btn.querySelector('.dropdown-content');
     btn.querySelector('#enableAutoDownvoting').addEventListener('click', () => {
@@ -1456,3 +1475,4 @@ RESES.btnFilterPost = (() => {
         }
     };
 })();
+console.timeEnd("RESES");

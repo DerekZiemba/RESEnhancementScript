@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         RESEnhancementScript
-// @version      1.0.3
+// @name         RESEnhancementScript-Localhost
+// @version      1.0.10
 // @description	 Enhances RedditEnhancementSuite.  Adds hideable scrolling sidebars. Removes thumbnails on expanded posts. Auto Filters content and downvotes as necessary.
 // @author       Derek Ziemba
 // @include        *://*.reddit.*/*
@@ -10,9 +10,6 @@
 // @resource    customCSS https://localhost/.js/RESEnhancementScript/src/styles.css
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
-
 // ==/UserScript==
 
 GM_addStyle(GM_getResourceText("customCSS"));
-
-unsafeWindow.RESES = RESES;

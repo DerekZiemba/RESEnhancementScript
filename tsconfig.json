@@ -18,4 +18,8 @@
 }
 
 // tsc -p "A:\Dropbox\Scripts\.js\RESEnhancementScript\tsconfig.json"
-// tsc -p tsconfig.json
+/*
+
+tsc -p tsconfig.json
+
+*/

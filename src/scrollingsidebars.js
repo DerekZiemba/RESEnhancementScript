@@ -1,5 +1,4 @@
 /// <reference path="RESES.js" />
-/// <reference path="core.js" />
 /*global RESES */
 
 

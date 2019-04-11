@@ -1,5 +1,4 @@
 /// <reference path="RESES.js" />
-/// <reference path="core.js" />
 /*global RESES */
 
 "use strict";
@@ -194,7 +193,7 @@ RESES.filterData = {
 		"AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
 		"LateStageCapitalizm", "MarcheAgainstTrump", "MarchAgainstNazis", "Political_Revolution", "politics", "RussiaLago",
 		"ShitThe_DonaldSays", "The_Dotard", "Trumpgret", "PoliticalHumor", "The_Mueller", "SandersForPresident",
-		"EnoughTrumpSpam", "TrumpCriticizesTrump"
+		"EnoughTrumpSpam", "TrumpCriticizesTrump", "MurderedByWords"
 	].map(x => x && x.toLowerCase())
 
 };
