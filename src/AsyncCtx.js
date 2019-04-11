@@ -94,7 +94,6 @@ RESES.AsyncCtx = (() => {
       return op;
     }
     debounce(method, delay, forceBackground) {
-      if (RESES.isFirefox && !delay) { delay = 1; }
       var op = this.map.get(method);
       if (op !== undefined) {
         op.cancel();
@@ -168,16 +167,6 @@ RESES.AsyncCtx = (() => {
     }
   }
 
-  window.addEventListener("load", windowLoaded);
-
-  if (document.readyState !== "loading") {
-    console.info("RESES loaded in late state.", document.readyState);
-    documentReady();
-	} else {
-		window.addEventListener("DOMContentLoaded", documentReady);
-  }
-
-
   RESES.doAsync = function defaultDoAsync(func, delay = 0) {
     return context.doAsync(func, delay);
   };
@@ -207,5 +196,14 @@ RESES.AsyncCtx = (() => {
       context.doAsync(method);
     }
   };
+
+  window.addEventListener("load", windowLoaded);
+
+  if (document.readyState !== "loading") {
+    console.info("RESES loaded in late state.", document.readyState);
+    setTimeout(documentReady, 0);
+	} else {
+		window.addEventListener("DOMContentLoaded", documentReady);
+  }
 
 })(RESES);

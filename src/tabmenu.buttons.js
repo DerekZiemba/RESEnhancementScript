@@ -10,7 +10,7 @@ RESES.addTabMenuButton = function addTabMenuButton(el) {
 
 RESES.btnFilterPost = (() => {
 	const btn = Element.From(`
-		<li>
+		<li id="resesMenuButton">
 			<style type="text/css" scoped>
 				body.goodthings #filtermode .goodthings {	color: lightgreen;	}
 				body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {	color: tomato;	}
@@ -142,7 +142,7 @@ RESES.btnFilterPost = (() => {
   }
 
 	RESES.onInit(tabMenuInit, -10);
-	RESES.onLoaded(tabMenuReady, -10);
+  RESES.onReady(tabMenuReady, 10);
 
 	const elGoodposts = btn.querySelector('.goodpost span');
 	const elFilteredposts = btn.querySelector('.filteredpost span');

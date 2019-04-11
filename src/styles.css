@@ -1,152 +1,155 @@
 
-		.side, .listing-chooser .contents { display:none;};
-		.sb-track .side, .listing-chooser .sidebar .contents{display: block;}
-		.sb-on .sb-track .sb-sled {
-			/* width:min-content; */
-			display: block;}
+#header ul.tabmenu { display: inline-flex; }
+#resesMenuButton { order: 100 }
 
-		.listing-chooser .grippy {display: none;}
+.side, .listing-chooser .contents { display:none;};
+.sb-track .side, .listing-chooser .sidebar .contents{display: block;}
+.sb-on .sb-track .sb-sled {
+  /* width:min-content; */
+  display: block;}
 
-		.sb-off.sidebar {	width: 6px;	}
-		.sidebar {
-			background-color: rgb(30, 30, 30);
-			position: absolute;
-			height:100%;
-			display: none;
-		}
-		.sidebar.sb-init {
-			display: flex;
-		}
-			.sidebar:hover {	z-index:50;	}
+.listing-chooser .grippy {display: none;}
 
-		#sbRight.sidebar {	right:0;	}
-		#sbRight.sb-on.sidebar .sb-handle { margin-left:-5px;	 order: 0;	}
+.sb-off.sidebar {	width: 6px;	}
+.sidebar {
+  background-color: rgb(30, 30, 30);
+  position: absolute;
+  height:100%;
+  display: none;
+}
+.sidebar.sb-init {
+  display: flex;
+}
+  .sidebar:hover {	z-index:50;	}
 
-		#sbLeft.sidebar {	left:0;	}
-		#sbLeft.sidebar .sb-handle {	position: relative;	order: 1;	}
+#sbRight.sidebar {	right:0;	}
+#sbRight.sb-on.sidebar .sb-handle { margin-left:-5px;	 order: 0;	}
 
-			.sb-off.sidebar .sb-track {	display: none;	}
-			.sidebar .sb-track {	margin-top: 20px;	}
-			.sidebar .sb-track .sb-sled {	padding: 3px;	margin:0;	}
-			.sidebar .sb-handle:hover {	background-color: rgb(92, 82, 82);	cursor: pointer;	}
-			.sidebar .sb-handle {
-				position: fixed;
-				min-height: 100%;
-				width:5px;
-				background-color: rgb(63, 58, 58);
-			}
+#sbLeft.sidebar {	left:0;	}
+#sbLeft.sidebar .sb-handle {	position: relative;	order: 1;	}
 
-
-    #sbHeader.sidebar {
-      position: absolute;
-      top: 0;
-    }
-
-    #sbHeader .sb-handle {
-      min-height: 5px;
-      min-width: 100%;
-    }
-
-    #sbHeader .sb-track {
-      margin-top: 0px;
-      /* position: absolute;
-      width: 98vw; */
-    }
-
-		html body.with-listing-chooser .listing-chooser {	position: static; display: none; padding-right:unset;	}
-		html body.with-listing-chooser.sidebarman .listing-chooser {	display: block;	}
-
-		html body .content { margin-left: 0px}
-		html body.with-listing-chooser>.content,
-		html body.with-listing-chooser.listing-chooser-collapsed>.content,
-		html body.with-listing-chooser .footer-parent {
-			margin-left: 0;
-			/* padding-left:8px; */
-		}
-
-		.tabmenu{ display: block; }
-		.thumbnail.self, .thumbnail.default, .thumbnail.spoiler	{ display:none !important; }
-		.thing {
-			padding: 5px 0 5px 0;
-			margin: 7px 0 7px 0;
-		}
-		.comment .child, .comment .showreplies {
-			margin-left: 9px !important;
-			margin-top: 3px !important;
-		}
-		.res-commentBoxes .comment {
-			margin-left: 3px !important;
-		}
-		#allOptionsContainer {
-			max-width: 1000%;
-		}
-
-			body.goodpost #siteTable .thing.zregistered { display: block !important; }
-			body.goodpost #siteTable .thing.zregistered.RESFiltered,
-			body.goodpost #siteTable .thing.zregistered.autodownvoted {	display: none !important; }
-
-			body.filteredpost #siteTable .thing.zregistered.RESFiltered { display: block !important; }
-			body.filteredpost #siteTable .thing.zregistered,
-			body.filteredpost #siteTable .thing.zregistered.autodownvoted { display: none !important; }
-
-			body.shitpost #siteTable .thing.zregistered.autodownvoted {	display: block !important; }
-			body.shitpost #siteTable .thing.zregistered,
-			body.shitpost #siteTable .thing.zregistered.RESFiltered:not(.autodownvoted) { display: none !important; }
+  .sb-off.sidebar .sb-track {	display: none;	}
+  .sidebar .sb-track {	margin-top: 20px;	}
+  .sidebar .sb-track .sb-sled {	padding: 3px;	margin:0;	}
+  .sidebar .sb-handle:hover {	background-color: rgb(92, 82, 82);	cursor: pointer;	}
+  .sidebar .sb-handle {
+    position: fixed;
+    min-height: 100%;
+    width:5px;
+    background-color: rgb(63, 58, 58);
+  }
 
 
-		body.goodpost #filtermode .goodpost {	color: lightgreen;	}
-		body.shitpost #filtermode .shitpost, body.filteredpost #filtermode .filteredpost {	color: tomato;	}
+#sbHeader.sidebar {
+  position: absolute;
+  top: 0;
+}
+
+#sbHeader .sb-handle {
+  min-height: 5px;
+  min-width: 100%;
+}
+
+#sbHeader .sb-track {
+  margin-top: 0px;
+  /* position: absolute;
+  width: 98vw; */
+}
+
+html body.with-listing-chooser .listing-chooser {	position: static; display: none; padding-right:unset;	}
+html body.with-listing-chooser.sidebarman .listing-chooser {	display: block;	}
+
+html body .content { margin-left: 0px}
+html body.with-listing-chooser>.content,
+html body.with-listing-chooser.listing-chooser-collapsed>.content,
+html body.with-listing-chooser .footer-parent {
+  margin-left: 0;
+  /* padding-left:8px; */
+}
+
+.tabmenu{ display: block; }
+.thumbnail.self, .thumbnail.default, .thumbnail.spoiler	{ display:none !important; }
+.thing {
+  padding: 5px 0 5px 0;
+  margin: 7px 0 7px 0;
+}
+.comment .child, .comment .showreplies {
+  margin-left: 9px !important;
+  margin-top: 3px !important;
+}
+.res-commentBoxes .comment {
+  margin-left: 3px !important;
+}
+#allOptionsContainer {
+  max-width: 1000%;
+}
+
+  body.goodpost #siteTable .thing.zregistered { display: block !important; }
+  body.goodpost #siteTable .thing.zregistered.RESFiltered,
+  body.goodpost #siteTable .thing.zregistered.autodownvoted {	display: none !important; }
+
+  body.filteredpost #siteTable .thing.zregistered.RESFiltered { display: block !important; }
+  body.filteredpost #siteTable .thing.zregistered,
+  body.filteredpost #siteTable .thing.zregistered.autodownvoted { display: none !important; }
+
+  body.shitpost #siteTable .thing.zregistered.autodownvoted {	display: block !important; }
+  body.shitpost #siteTable .thing.zregistered,
+  body.shitpost #siteTable .thing.zregistered.RESFiltered:not(.autodownvoted) { display: none !important; }
 
 
-		.res-commentBoxes .thing.comment {
-			padding: 3px 5px 3px 3px !important;
-			margin: 0px 4px 4px 5px !important;
-		}
+body.goodpost #filtermode .goodpost {	color: lightgreen;	}
+body.shitpost #filtermode .shitpost, body.filteredpost #filtermode .filteredpost {	color: tomato;	}
 
-		.content{
-			background-color: hsl(0,0%,10%)	!important;
-		}
-		.thing {
-			background: hsl(0,0%,14%) !important;
-		}
-		.subreddit, .author {
-			color: rgba(20, 150, 220, 0.8) !important;
-		}
-		.domain a {
-			color: rgb(173, 216, 230) !important;
-		}
-		.live-timestamp {
-			color: #898963 !important
-		}
 
-		.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container, .res-nightmode.res-commentBoxes .comment.RES-keyNav-activeThing,
-		.child>.sitetable> .comment.RES-keyNav-activeThing,
-		.child>.sitetable>.comment > .child>.sitetable> .comment.RES-keyNav-activeThing,
-		.child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable > .comment.RES-keyNav-activeThing {
-			background-color: hsl(0,5%,15%)	!important;
-		}
-		.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container,	.thing.link.RES-keyNav-activeThing {
-			background-color: hsl(0,4%, 11%)	!important;
-		}
-		.res-nightmode .RES-keyNav-activeElement > .tagline,
-		.res-nightmode .RES-keyNav-activeElement .md-container > .md,
-		.res-nightmode .RES-keyNav-activeElement .md-container > .md p {
-			color: #FFFFFF!important;
-		}
-		.unvoted, .link .rank {
-			color: #c6c6c6 !important;
-		}
-		.flat-list a {
-			color: rgb(158, 158, 158) !important;
-		}
-		.thing .title:visited, .combined-search-page .search-result a:visited, .combined-search-page .search-result a:visited > mark {
-			color: rgb(166, 166, 166);
-		}
-		.thing .title, h1, h2, h3, h4, p {
-			color: rgb(222, 222, 222);
-		}
+.res-commentBoxes .thing.comment {
+  padding: 3px 5px 3px 3px !important;
+  margin: 0px 4px 4px 5px !important;
+}
 
-		.res-nightmode .flair, .res-nightmode .linkflairlabel {
-			color: white;
-		}
+.content{
+  background-color: hsl(0,0%,10%)	!important;
+}
+.thing {
+  background: hsl(0,0%,14%) !important;
+}
+.subreddit, .author {
+  color: rgba(20, 150, 220, 0.8) !important;
+}
+.domain a {
+  color: rgb(173, 216, 230) !important;
+}
+.live-timestamp {
+  color: #898963 !important
+}
+
+.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container, .res-nightmode.res-commentBoxes .comment.RES-keyNav-activeThing,
+.child>.sitetable> .comment.RES-keyNav-activeThing,
+.child>.sitetable>.comment > .child>.sitetable> .comment.RES-keyNav-activeThing,
+.child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable>.comment > .child>.sitetable > .comment.RES-keyNav-activeThing {
+  background-color: hsl(0,5%,15%)	!important;
+}
+.RES-keyNav-activeElement,	.RES-keyNav-activeElement .md-container,	.thing.link.RES-keyNav-activeThing {
+  background-color: hsl(0,4%, 11%)	!important;
+}
+.res-nightmode .RES-keyNav-activeElement > .tagline,
+.res-nightmode .RES-keyNav-activeElement .md-container > .md,
+.res-nightmode .RES-keyNav-activeElement .md-container > .md p {
+  color: #FFFFFF!important;
+}
+.unvoted, .link .rank {
+  color: #c6c6c6 !important;
+}
+.flat-list a {
+  color: rgb(158, 158, 158) !important;
+}
+.thing .title:visited, .combined-search-page .search-result a:visited, .combined-search-page .search-result a:visited > mark {
+  color: rgb(166, 166, 166);
+}
+.thing .title, h1, h2, h3, h4, p {
+  color: rgb(222, 222, 222);
+}
+
+.res-nightmode .flair, .res-nightmode .linkflairlabel {
+  color: white;
+}
 

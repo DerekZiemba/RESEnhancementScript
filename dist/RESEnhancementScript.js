@@ -361,9 +361,6 @@ RESES.AsyncCtx = (() => {
             return op;
         }
         debounce(method, delay, forceBackground) {
-            if (RESES.isFirefox && !delay) {
-                delay = 1;
-            }
             var op = this.map.get(method);
             if (op !== undefined) {
                 op.cancel();
@@ -434,14 +431,6 @@ RESES.AsyncCtx = (() => {
             }
         }
     }
-    window.addEventListener("load", windowLoaded);
-    if (document.readyState !== "loading") {
-        console.info("RESES loaded in late state.", document.readyState);
-        documentReady();
-    }
-    else {
-        window.addEventListener("DOMContentLoaded", documentReady);
-    }
     RESES.doAsync = function defaultDoAsync(func, delay = 0) {
         return context.doAsync(func, delay);
     };
@@ -474,6 +463,14 @@ RESES.AsyncCtx = (() => {
             context.doAsync(method);
         }
     };
+    window.addEventListener("load", windowLoaded);
+    if (document.readyState !== "loading") {
+        console.info("RESES loaded in late state.", document.readyState);
+        setTimeout(documentReady, 0);
+    }
+    else {
+        window.addEventListener("DOMContentLoaded", documentReady);
+    }
 })(RESES);
 RESES.Color = (function () {
     function toHex(num, padding) {
@@ -1336,7 +1333,7 @@ RESES.addTabMenuButton = function addTabMenuButton(el) {
 };
 RESES.btnFilterPost = (() => {
     const btn = Element.From(`
-		<li>
+		<li id="resesMenuButton">
 			<style type="text/css" scoped>
 				body.goodthings #filtermode .goodthings {	color: lightgreen;	}
 				body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {	color: tomato;	}
@@ -1462,7 +1459,7 @@ RESES.btnFilterPost = (() => {
         }
     }
     RESES.onInit(tabMenuInit, -10);
-    RESES.onLoaded(tabMenuReady, -10);
+    RESES.onReady(tabMenuReady, 10);
     const elGoodposts = btn.querySelector('.goodpost span');
     const elFilteredposts = btn.querySelector('.filteredpost span');
     const elShitposts = btn.querySelector('.shitpost span');
