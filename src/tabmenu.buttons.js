@@ -35,6 +35,7 @@ RESES.btnFilterPost = (() => {
         .setting a::after { content: "enabled"; float: right; }
         .setting.disabled a::after { content: "disabled" }
         .setting.disabled a { color: red; }
+        .setting.disabled setting { display: none; }
 			</style>
 			<div id="btnDropdown" style="position:relative; display: inline-block;">
 				<a id="filtermode" href="#2">
