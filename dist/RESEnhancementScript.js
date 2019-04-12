@@ -1393,6 +1393,7 @@ RESES.btnFilterPost = (() => {
             let value = RESES.config[id] = document.body.classList.toggle(id);
             setting.classList.toggle('disabled', !value);
             onChange && onChange.call(setting, value, ev);
+            RESES.linkListingMgr.updateLinkListings();
         });
         let ul = parent.getElementsByTagName('ul')[0];
         if (!ul) {
