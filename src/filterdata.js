@@ -136,7 +136,7 @@ RESES.filterData = {
 		"WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
 		"mila_azul", "sex_comics", "KateeOwen", "Hotwife", "EroticLuxury", "WrestleFap", "PickOne", "OliviaMunn",
 		"Titties", "Humongousaurustits", "sissyhypno", "CelebsBR", "dontslutshame", "AdultNeeds", "GodPussy",
-		"assholegonewild"
+		"assholegonewild", "workgonewild", "LiyaSilver", "CuteTraps"
 	].map(x => x && x.toLowerCase()),
 
 	pornaccounts: [
@@ -163,7 +163,7 @@ RESES.filterData = {
 		"ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
 		"Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
 		"pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz", "kancolle", "ReasonableFantasy",
-		"minipainting", "salty", "HollowKnight", "ShitPostCrusaders"
+		"minipainting", "salty", "HollowKnight", "ShitPostCrusaders", "Sekiro", "TsundereSharks", "DomesticGirlfriend"
 	].map(x => x && x.toLowerCase()),
 
 	annoyingflairs: [
@@ -176,7 +176,7 @@ RESES.filterData = {
 		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
 		"antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
 		"sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies",
-		"blackcats", "intermittentfasting"
+		"blackcats", "intermittentfasting", "fasting"
 	].map(x => x && x.toLowerCase()),
 
 	shows: [
@@ -185,7 +185,8 @@ RESES.filterData = {
 
 	games: [
 		"deadbydaylight", "smashbros", "DestinyTheGame", "destiny2", "Warframe", "NintendoSwitch", "Warhammer40k", "PathOfExile",
-		"zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR"
+    "zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR", "Overwatch_Memes", "Deltarune",
+    "ACPocketCamp"
 	].map(x => x && x.toLowerCase()),
 
 

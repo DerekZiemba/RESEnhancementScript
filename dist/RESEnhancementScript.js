@@ -732,7 +732,7 @@ RESES.filterData = {
         "WhiteAndThick", "GirlsWearingVS", "MyCalvins", "CollegeInitiation", "joeyfisher", "FitGirlsFucking",
         "mila_azul", "sex_comics", "KateeOwen", "Hotwife", "EroticLuxury", "WrestleFap", "PickOne", "OliviaMunn",
         "Titties", "Humongousaurustits", "sissyhypno", "CelebsBR", "dontslutshame", "AdultNeeds", "GodPussy",
-        "assholegonewild"
+        "assholegonewild", "workgonewild", "LiyaSilver", "CuteTraps"
     ].map(x => x && x.toLowerCase()),
     pornaccounts: [
         "lilmshotstuff", "Bl0ndeB0i", "Alathenia", "kinkylilkittyy", "Immediateunmber", "justsomegirlidk", "serenityjaneee",
@@ -757,7 +757,7 @@ RESES.filterData = {
         "ImaginaryOverwatch", "ImaginarySliceOfLife", "MadokaMagica", "SeishunButaYarou", "yuruyuri", "houkai3rd",
         "Megaten", "Saber", "Metroid", "osugame", "grandorder", "yugioh", "attackontitan", "megane", "OneTrueBiribiri",
         "pouts", "MyHeroAcademia", "ImaginaryMonsters", "dragonballfighterz", "kancolle", "ReasonableFantasy",
-        "minipainting", "salty", "HollowKnight", "ShitPostCrusaders"
+        "minipainting", "salty", "HollowKnight", "ShitPostCrusaders", "Sekiro", "TsundereSharks", "DomesticGirlfriend"
     ].map(x => x && x.toLowerCase()),
     annoyingflairs: [
         "Art", "Artwork", "FanArt", "Fan Art", "Fan Work"
@@ -768,14 +768,15 @@ RESES.filterData = {
         "drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
         "antiMLM", "vaxxhappened", "bonehurtingjuice", "meirl", "me_irl", "inthesoulstone", "thanosdidnothingwrong",
         "sneks", "2meirl4meirl", "corgi", "sweden", "Catloaf", "SupermodelCats", "CatTaps", "PenmanshipPorn", "catbellies",
-        "blackcats", "intermittentfasting"
+        "blackcats", "intermittentfasting", "fasting"
     ].map(x => x && x.toLowerCase()),
     shows: [
         "TheSimpsons", "gravityfalls"
     ].map(x => x && x.toLowerCase()),
     games: [
         "deadbydaylight", "smashbros", "DestinyTheGame", "destiny2", "Warframe", "NintendoSwitch", "Warhammer40k", "PathOfExile",
-        "zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR"
+        "zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR", "Overwatch_Memes", "Deltarune",
+        "ACPocketCamp"
     ].map(x => x && x.toLowerCase()),
     politics: [
         "AgainstHateSubreddits", "AntiTrumpAlliance", "BannedFromThe_Donald", "esist", "Fuckthealtright", "Impeach_Trump",
@@ -846,7 +847,6 @@ RESES.linkRegistry = (() => {
                 console.error("Duplicate Blocked Url.", url);
             }
             else {
-                console.info("Blocking URL", url);
                 node[last] = 1;
                 !nosave && RESES.debounce(saveBlocked, 30);
             }
@@ -856,7 +856,6 @@ RESES.linkRegistry = (() => {
             var last = parts[parts.length - 1];
             var node = getNode(parts);
             if (last in node) {
-                console.info("Removing Blocked URL", url);
                 delete node[last];
                 RESES.debounce(saveBlocked, 30);
             }
@@ -1002,6 +1001,9 @@ RESES.LinkListing = (() => {
                 this.url = _getHostAndPath(this.url);
                 if (this.url.length > 0) {
                     this.bIsBlockedURL = checkIfBlockedUrl(this.url);
+                    if (this.bIsBlockedURL) {
+                        console.log("Autodownvoting blocked url: " + this.url, this);
+                    }
                     this.bIsRepost = registerLinkListing(this);
                 }
             }
@@ -1325,52 +1327,71 @@ RESES.sideBarMgr = (() => {
         get header() { return ssheader; }
     };
 })();
-RESES.addTabMenuButton = function addTabMenuButton(el) {
-    var tabbar = document.getElementsByClassName('tabmenu')[0];
-    if (tabbar) {
-        tabbar.appendChild(el);
-    }
-};
 RESES.btnFilterPost = (() => {
     const btn = Element.From(`
 		<li id="resesMenuButton">
 			<style type="text/css" scoped>
-				body.goodthings #filtermode .goodthings {	color: lightgreen;	}
-				body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {	color: tomato;	}
-				#btnDropdown { position:relative; display: inline-block; }
-				#btnDropdown:hover .dropdown-content {display: block;}
-				#btnDropdown:hover .dropbtn {background-color: #3e8e41;}
-				.dropdown-content { display:none; position: absolute; min-width: 160px; z-index:10; margin-top 5px; background-color: rgb(50, 50, 50); }
-				ul.dropdown-content li, ul.dropdown-content li a {
-					display: block; margin: 2px; min-width: 160px; padding: 5px; background-color: rgb(50, 50, 50);
-					cursor: pointer;
-				}
-				ul.dropdown-content li:hover { background-color: rgb(70, 70, 70); }
-				ul.dropdown-content li:hover a { background-color: rgb(70, 70, 70); color: lightgreen; }
-				ul.dropdown-content.downvotingenabled li.downvotingdisabled { display: none; }
-				ul.dropdown-content.downvotingdisabled li.downvotingenabled { display: none; }
+        body.goodthings #filtermode .goodthings {	color: lightgreen;	}
+        body.filteredthings #filtermode .filteredthings, body.badthings #filtermode .badthings {	color: tomato;	}
+        #btnDropdown:hover #resesCfg { display: block; }
+        #resesCfg { display:none; width: 100%; position: absolute; min-width: 160px; z-index:10;
+          background-color: rgb(50, 50, 50);
+        }
+        #resesCfg li { margin: 0; }
+        #resesCfg li:hover { filter: brightness(125%); }
+        .resesddl li {
+          display: block;
+          cursor: pointer;
+          width: auto;
+        }
+        .resesddl li a {
+          margin: 5px;
+          padding: 4px;
+          width: auto;
+          display: block;
+        }
+        .resesddl .resesddl {
+          border-left: medium solid slateblue;
+          margin-left: 8px;
+        }
+
+        .setting a::after { content: "enabled"; float: right; }
+        .setting.disabled a::after { content: "disabled" }
+        .setting.disabled a { color: red; }
 			</style>
-			<div id="btnDropdown">
+			<div id="btnDropdown" style="position:relative; display: inline-block;">
 				<a id="filtermode" href="#2">
 					<span class='goodpost'>GoodPosts(<span></span>)</span>&nbsp-&nbsp
 					<span class='filteredpost'>Filtered(<span></span>)</span>&nbsp-&nbsp
 					<span class='shitpost'>Downvoted(<span></span>)</span>
-				</a>
-				<ul class='dropdown-content'>
-					<li><a id="downvoteFiltered"><span>Downvote all filtered content</span></a></li>
-					<li><a id="removeDownvotes"><span>Remove Auto Downvotes</span></a></li>
-
-					<li class='downvotingdisabled'><a id="enableAutoDownvoting"><span>Enable Auto Downvoting</span></a></li>
-					<li class='downvotingenabled'><a id="disableAutoDownvoting"><span>Disable Auto Downvoting</span></a></li>
-
-					<li class='downvotingenabled'><a id="enableFilterDownvoting"><span>Enable Filter Based Downvoting</span></a></li>
-					<li class='downvotingenabled'><a id="disableFilterDownvoting"><span>Disable Filter Based Downvoting</span></a></li>
-
-					<li class='downvotingenabled'><a id="enableRepostDownvoting"><span>Enable Repost Downvoting</span></a></li>
-					<li class='downvotingenabled'><a id="disableRepostDownvoting"><span>Disable Repost Downvoting</span></a></li>
-				</ul>
+        </a>
+        <div id="resesCfg">
+          <ul class='resesddl'>
+            <li><a id="downvoteFiltered"><span>Downvote all filtered content</span></a></li>
+            <li><a id="removeDownvotes"><span>Remove Auto Downvotes</span></a></li>
+          </ul>
+        </div>
 			</div>
-		</li>`);
+    </li>`);
+    const dropdown = btn.querySelector('#btnDropdown');
+    function addToggle(parent, id, onChange) {
+        const setting = Element.From(`<li id="${id}" class="setting">
+                                      <a><span>${id}</span></a>
+                                  </li>`);
+        setting.classList.toggle('disabled', !dropdown.classList.toggle(id, RESES.config[id]));
+        setting.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            let value = RESES.config[id] = dropdown.classList.toggle(id);
+            setting.classList.toggle('disabled', !value);
+            onChange && onChange.call(setting, value, ev);
+        });
+        let ul = parent.getElementsByTagName('ul')[0];
+        if (!ul) {
+            parent.appendChild(ul = Element.From(`<ul class='resesddl'></ul>`));
+        }
+        ul.appendChild(setting);
+        return setting;
+    }
     btn.querySelector('#filtermode').addEventListener('click', () => {
         var cls = document.body.classList;
         if (cls.contains('goodpost')) {
@@ -1402,64 +1423,18 @@ RESES.btnFilterPost = (() => {
             RESES.debounce(RESES.linkListingMgr.updateLinkListings);
         });
     });
-    const elDropdownContent = btn.querySelector('.dropdown-content');
-    btn.querySelector('#enableAutoDownvoting').addEventListener('click', () => {
-        RESES.config.bAutoDownvoting = true;
-        elDropdownContent.classList.remove('downvotingdisabled');
-        elDropdownContent.classList.add('downvotingenabled');
-    });
-    btn.querySelector('#disableAutoDownvoting').addEventListener('click', () => {
-        RESES.config.bAutoDownvoting = false;
-        elDropdownContent.classList.remove('downvotingenabled');
-        elDropdownContent.classList.add('downvotingdisabled');
-    });
-    const elEnableFilterDownvoting = btn.querySelector('#enableFilterDownvoting');
-    const elDisableFilterDownvoting = btn.querySelector('#disableFilterDownvoting');
-    elEnableFilterDownvoting.addEventListener('click', () => {
-        RESES.config.bFilterDownvoting = true;
-        elEnableFilterDownvoting.parentElement.style.display = 'none';
-        elDisableFilterDownvoting.parentElement.style.display = 'block';
-    });
-    elDisableFilterDownvoting.addEventListener('click', () => {
-        RESES.config.bFilterDownvoting = false;
-        elEnableFilterDownvoting.parentElement.style.display = 'block';
-        elDisableFilterDownvoting.parentElement.style.display = 'none';
-    });
-    const elEnableRepostDownvoting = btn.querySelector('#enableRepostDownvoting');
-    const elDisableRepostDownvoting = btn.querySelector('#disableRepostDownvoting');
-    elEnableRepostDownvoting.addEventListener('click', () => {
-        RESES.config.bRepostDownvoting = true;
-        elEnableRepostDownvoting.parentElement.style.display = 'none';
-        elDisableRepostDownvoting.parentElement.style.display = 'block';
-    });
-    elDisableRepostDownvoting.addEventListener('click', () => {
-        RESES.config.bRepostDownvoting = false;
-        elEnableRepostDownvoting.parentElement.style.display = 'block';
-        elDisableRepostDownvoting.parentElement.style.display = 'none';
-    });
-    function tabMenuInit() {
-        elDropdownContent.classList.add(RESES.config.bAutoDownvoting ? 'downvotingenabled' : 'downvotingdisabled');
-        if (RESES.config.bFilterDownvoting) {
-            elEnableFilterDownvoting.parentElement.style.display = 'none';
-        }
-        else {
-            elDisableFilterDownvoting.parentElement.style.display = 'none';
-        }
-        if (RESES.config.bRepostDownvoting) {
-            elEnableRepostDownvoting.parentElement.style.display = 'none';
-        }
-        else {
-            elDisableRepostDownvoting.parentElement.style.display = 'none';
-        }
-    }
-    function tabMenuReady() {
+    const ddlAutoDownvoting = addToggle(dropdown, 'bAutoDownvoting');
+    addToggle(ddlAutoDownvoting, 'bFilterDownvoting');
+    addToggle(ddlAutoDownvoting, 'bRepostDownvoting');
+    RESES.onReady(function tabMenuReady() {
         if (!RESES.bIsCommentPage && !RESES.bIsUserPage) {
             document.body.classList.add('goodpost');
-            RESES.addTabMenuButton(btn);
+            var tabbar = document.getElementsByClassName('tabmenu')[0];
+            if (tabbar) {
+                tabbar.appendChild(btn);
+            }
         }
-    }
-    RESES.onInit(tabMenuInit, -10);
-    RESES.onReady(tabMenuReady, 10);
+    }, 10);
     const elGoodposts = btn.querySelector('.goodpost span');
     const elFilteredposts = btn.querySelector('.filteredpost span');
     const elShitposts = btn.querySelector('.shitpost span');

@@ -63,7 +63,7 @@ RESES.linkRegistry = (() => {
       if (last in node) {
         console.error("Duplicate Blocked Url.", url);
       } else {
-        console.info("Blocking URL", url);
+        // console.info("Blocking URL", url);
         node[last] = 1;
         !nosave && RESES.debounce(saveBlocked, 30);
       }
@@ -73,7 +73,7 @@ RESES.linkRegistry = (() => {
       var last = parts[parts.length - 1];
       var node = getNode(parts);
       if (last in node) {
-        console.info("Removing Blocked URL", url);
+        // console.info("Removing Blocked URL", url);
         delete node[last];
         RESES.debounce(saveBlocked, 30);
       } else {
@@ -211,6 +211,7 @@ RESES.LinkListing = (() => {
         this.url = _getHostAndPath(this.url);
         if (this.url.length > 0) {
           this.bIsBlockedURL = checkIfBlockedUrl(this.url);
+          if (this.bIsBlockedURL) { console.log("Autodownvoting blocked url: " + this.url, this); }
           this.bIsRepost = registerLinkListing(this);
         }
       }
