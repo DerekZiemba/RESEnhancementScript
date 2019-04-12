@@ -187,21 +187,12 @@ RESES.LinkListing = (() => {
       this.age = Date.now() - Number(ds.timestamp);
 
       this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
-      this.bIsRepost = false;
-      this.bIsBlockedURL = false;
-      this.bIsKarmaWhore = false;
-      this.bIsPorn = false;
-      this.bIsAnime = false;
-      this.bIsAnnoying = false;
-      this.bIsPolitics = false;
-      this.bIsShow = false;
-      this.bIsGame = false;
       this.bPending = false;
 
       this.updateThumbnail = () => _updateThumbnail(this);
       this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
 
-      this.cls.add('zregistered');
+      this.cls.add('registered');
 
       if (this.midcol !== null) {
         this.midcol.addEventListener('click', this.handleVoteClick);
@@ -210,52 +201,43 @@ RESES.LinkListing = (() => {
       if (this.url !== null) {
         this.url = _getHostAndPath(this.url);
         if (this.url.length > 0) {
-          this.bIsBlockedURL = checkIfBlockedUrl(this.url);
-          if (this.bIsBlockedURL) { console.log("Autodownvoting blocked url: " + this.url, this); }
-          this.bIsRepost = registerLinkListing(this);
+          if (this.isBlockedURL = checkIfBlockedUrl(this.url)) { console.log("Autodownvoting blocked url: " + this.url, this); }
+          this.isRepost = registerLinkListing(this);
         }
       }
 
       if (this.subreddit !== null) {
         this.subreddit = _sanitizeSubreddit(this.subreddit);
         if (!this.bIsTextPost) {
-          this.bIsPorn = filterData.pornsubs.includes(this.subreddit) || filterData.pornaccounts.includes(this.subreddit);
+          this.isPornsub = filterData.pornsub.includes(this.subreddit);
+          this.isPornaccount = filterData.pornaccount.includes(this.subreddit);
         }
-        this.bIsAnime = filterData.animesubs.includes(this.subreddit);
-        this.bIsAnnoying = filterData.annoyingsubs.includes(this.subreddit);
-        this.bIsShow = filterData.shows.includes(this.subreddit);
-        this.bIsGame = filterData.games.includes(this.subreddit);
-        this.bIsPolitics = filterData.politics.includes(this.subreddit);
+        this.isAnimesub = filterData.animesub.includes(this.subreddit);
+        this.isAnnoyingsub = filterData.show.includes(this.subreddit);
+        this.isShow = filterData.show.includes(this.subreddit);
+        this.isGame = filterData.game.includes(this.subreddit);
+        this.isPolitics = filterData.politics.includes(this.subreddit);
       }
 
       if (this.author !== null) {
         this.author = this.author.toLowerCase();
-        this.bIsKarmaWhore = filterData.karmawhores.includes(this.author);
+        this.isKarmawhore = filterData.karmawhore.includes(this.author);
         if (!this.bIsTextPost) {
-          this.bIsPorn = this.bIsPorn || filterData.pornaccounts.includes(this.author);
+          this.isPornaccount = filterData.pornaccount.includes(this.author);
         }
       }
 
-      if (!this.bisAnnoying && post.classList.contains("linkFlair")) {
+      if (post.classList.contains("linkFlair")) {
         let label = post.getElementsByClassName('linkflairlabel')[0];
         let text = label.title.toLowerCase();
-        this.bisAnnoying = filterData.annoyingflairs.includes(text);
-        if (!this.bisAnnoying) {
+        this.isAnnoyingflair = filterData.annoyingflair.includes(text);
+        if (!this.isAnnoyingflair && !this.isAnnoyingsub) {
           //Due to the getComputedStyle call, this has substantial overhead if not done in animation frame, slowing down the initLinkListings method
           // For 100 posts, overhead is decreased from 60ms to 8ms.
           asyncctx.doAsync(() => _adjustFlairColor(label));
         }
       }
 
-      if (this.bIsRepost) { this.cls.add('isrepost'); }
-      if (this.bIsBlockedURL) { this.cls.add('isblockedurl'); }
-      if (this.bIsPorn) { this.cls.add('isporn'); }
-      if (this.bIsAnime) { this.cls.add('isanime'); }
-      if (this.bIsKarmaWhore) { this.cls.add('iskarmawhore'); }
-      if (this.bIsAnnoying) { this.cls.add('isannoying'); }
-      if (this.bIsShow) { this.cls.add('isshow'); }
-      if (this.bIsGame) { this.cls.add('isgame'); }
-      if (this.bIsPolitics) { this.cls.add('ispolitics'); }
       if (this.shouldBeDownvoted) {
         this.autoDownvotePost();
       }
@@ -278,13 +260,16 @@ RESES.LinkListing = (() => {
 		get isCrosspost() { return parseInt(this.post.dataset.numCrossposts) > 0; }
 		get isNSFW() { return this.cls.contains('over18'); }
 		get isFilteredByRES() { return this.cls.contains('RESFiltered'); }
-		get isAutoDownvoted() { return this.cls.contains('autodownvoted'); }
-		set isAutoDownvoted(bool) { this.cls.toggle('autodownvoted', bool); }
-		get bMatchesFilter() {
-			return this.bIsKarmaWhore || this.bIsPorn || this.bIsAnime || this.bIsAnnoying || this.bIsPolitics || this.bIsShow || this.bIsGame;
+    get bMatchesFilter() {
+      let filters = LinkListing.filters;
+      for (var len = filters.length, i = 0; i < len; i++) {
+        var filter = filters[i];
+        if (this[filter.use]) { return true; }
+      }
+      return false;
 		}
 		get shouldBeDownvoted() {
-			return (this.bIsBlockedURL || (!RESES.bIsMultireddit && (this.bIsRepost || this.bMatchesFilter))) && this.subreddit !== RESES.subreddit;
+			return this.subreddit !== RESES.subreddit && (!RESES.bIsMultireddit && (this.bRepost || this.bMatchesFilter));
     }
     get voteArrowDown() {
 			var item = null;
@@ -313,7 +298,7 @@ RESES.LinkListing = (() => {
 		autoDownvotePost() {
 			var cfg = RESES.config;
 			if (!RESES.bIsUserPage && cfg.bAutoDownvoting && this.isUnvoted  && this.ageDays < 30) {
-				if (this.bIsBlockedURL || cfg.bRepostDownvoting && this.bIsRepost || cfg.bFilterDownvoting && (this.bMatchesFilter)) {
+				if (this.bBlockedURL || cfg.bDownvoteReposts && this.bRepost || cfg.bDownvoteFiltered && (this.bMatchesFilter)) {
 					this.isAutoDownvoted = true;
 					//Since posts are autodownvoted during creation in initLinkListings, calling the click handler now will result in substantial overhead
 					// For 100 posts, 3 of which get downvoted, overhead is decreased from 100ms to 8ms.
@@ -329,7 +314,46 @@ RESES.LinkListing = (() => {
 				if (this.expandobox) { this.expandobox.hidden = false; }
 			}
 		}
-	}
+  }
+
+  LinkListing.filters = [];
+  LinkListing.defineFilter = function defineFilter(key) {
+    let filter = {
+      key: key,
+      cssFilter: "filter_" + key,
+      cssIs: "is_" + key,
+      jsIs: "is" + key.Capitalize(),
+      use: "b" + key.Capitalize()
+    };
+    LinkListing.filters.push(filter);
+    Object.defineProperty(LinkListing.prototype, filter.jsIs, {
+      get: function () { return this.cls.contains(filter.cssIs); },
+      set: function (bool) { this.cls.toggle(filter.cssIs, bool); }
+    });
+
+    Object.defineProperty(LinkListing.prototype, filter.use, {
+      get: function () { return document.body.classList.contains(filter.cssFilter) && this[filter.jsIs]; }
+    });
+  };
+
+  LinkListing.defineFilter("repost");
+  LinkListing.defineFilter("blockedURL");
+
+  Object.keys(RESES.filterData).forEach(LinkListing.defineFilter);
+
+  RESES.onReady(function generateCSSRules() {
+    document.head.parentElement.classList.add('reses');
+    document.head.parentElement.classList.add('res-filters-disabled');
+    let arr = [];
+    LinkListing.filters.forEach(filter => {
+      arr.push(`html.res.reses body #siteTable .thing.registered.${filter.cssIs} { display: block !important; }`);
+      arr.push(`html.res.reses body.${filter.cssFilter} #siteTable .thing.registered.${filter.cssIs} { display: none !important; }`);
+    });
+    let style = Element.From(`<style id="reses_FilterRules">
+      ${arr.join("\n")}
+    </style>`);
+    document.head.appendChild(style);
+  });
 
 	return LinkListing;
 })();
@@ -349,7 +373,7 @@ RESES.linkListingMgr = (() => {
         var post = posts[i];
         if (post.isDownvoted) {
           shit++;
-        } else if (post.isFilteredByRES) {
+        } else if (post.bMatchesFilter) {
           filtered++;
         } else {
           good++;

@@ -3,13 +3,12 @@
 
 "use strict";
 RESES.filterData = {
-
-	karmawhores: [
+	karmawhore: [
 		'SlimJones123', 'Ibleedcarrots', 'deathakissaway', 'pepsi_next', 'BunyipPouch', 'Sumit316',
 		'KevlarYarmulke', 'D5R', 'dickfromaccounting', 'icant-chooseone'
 	].map(x => x && x.toLowerCase()),
 
-	pornsubs: ["18_19", "2busty2hide", "60fpsporn", "aa_cups", "abelladanger", "adorableporn", "afrodisiac", "alathenia", "alexandradaddario",
+	pornsub: ["18_19", "2busty2hide", "60fpsporn", "aa_cups", "abelladanger", "adorableporn", "afrodisiac", "alathenia", "alexandradaddario",
 		"alteredbuttholes", "altgonewild", "alwaystheshyones", "amateur", "amateurcumsluts", "amateurgirlsbigcocks", "anacheriexclusive", "anal_gifs",
 		"angelawhite", "angievaronalegal", "animebooty", "animegifs", "animemidriff", "animemilfs", "animewallpaper", "anna_faith", "araragi", "arielwinter",
 		"armoredwomen", "ashihentai", "asianbabes", "asiancuties", "asianladyboners", "asiannsfw", "asshole", "assholebehindthong", "assholegonewild",
@@ -139,7 +138,7 @@ RESES.filterData = {
 		"assholegonewild", "workgonewild", "LiyaSilver", "CuteTraps"
 	].map(x => x && x.toLowerCase()),
 
-	pornaccounts: [
+	pornaccount: [
 		"lilmshotstuff", "Bl0ndeB0i", "Alathenia", "kinkylilkittyy", "Immediateunmber", "justsomegirlidk", "serenityjaneee",
 		"Urdadstillwantsme", "therealtobywong", "sarah-xxx", "RubyLeClaire", "chickpeasyx", "rizzzzzy",
 		"clarabelle_says", "Telari_Love", "purplehailstorm", "Peach_Legend", "NetflixandChillMe", "xrxse",
@@ -148,7 +147,7 @@ RESES.filterData = {
 		"Your_Little_Angel"
 	].map(x => x && x.toLowerCase()),
 
-	animesubs: [
+	animesub: [
 		"FireEmblemHeroes", "RWBY", "digimon", "Itasha", "Haruhi", "DragaliaLost", "awwnimate", "TokyoGhoul", "animenocontext",
 		"TheTempleOfOchako", "senrankagura", "furry_irl", "GoblinSlayer", "ImaginaryWarhammer", "characterdrawing",
 		"criticalrole", "ImaginaryCharacters", "alternativeart", "SoulCaliburCreations", "BokuNoMetaAcademia",
@@ -166,11 +165,11 @@ RESES.filterData = {
 		"minipainting", "salty", "HollowKnight", "ShitPostCrusaders", "Sekiro", "TsundereSharks", "DomesticGirlfriend"
 	].map(x => x && x.toLowerCase()),
 
-	annoyingflairs: [
+	annoyingflair: [
 		"Art", "Artwork", "FanArt", "Fan Art", "Fan Work"
 	].map(x => x && x.toLowerCase()),
 
-	annoyingsubs: [
+	annoyingsub: [
 		"uglyduckling", "guineapigs", "Rats", "happy", "Blep", "tattoos", "forbiddensnacks", "PrequelMemes",
 		"BoneAppleTea", "deadbydaylight", "Eyebleach", "vegan", "boottoobig", "pitbulls",
 		"drawing", "piercing", "Illustration", "curledfeetsies", "brushybrushy", "aww", "rarepuppers", "surrealmemes",
@@ -179,11 +178,11 @@ RESES.filterData = {
 		"blackcats", "intermittentfasting", "fasting"
 	].map(x => x && x.toLowerCase()),
 
-	shows: [
+	show: [
 		"TheSimpsons", "gravityfalls"
 	].map(x => x && x.toLowerCase()),
 
-	games: [
+	game: [
 		"deadbydaylight", "smashbros", "DestinyTheGame", "destiny2", "Warframe", "NintendoSwitch", "Warhammer40k", "PathOfExile",
     "zelda", "starcraft", "Competitiveoverwatch", "overwatch", "FortNiteBR", "Overwatch_Memes", "Deltarune",
     "ACPocketCamp"

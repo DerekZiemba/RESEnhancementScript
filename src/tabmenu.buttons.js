@@ -1,5 +1,6 @@
 
 /// <reference path="RESES.js" />
+/// <reference path="linklisting.js" />
 /*global RESES */
 
 "use strict";
@@ -54,16 +55,20 @@ RESES.btnFilterPost = (() => {
 
   const dropdown = btn.querySelector('#btnDropdown');
 
-  function addToggle(parent, id, onChange) {
+  function addToggle(parent, filter, _default = true, onChange) {
+    let id = typeof filter === 'string' ? filter : filter.cssFilter;
+    RESES.config.defineSetting(id, _default);
+
     const setting = Element.From(`<li id="${id}" class="setting">
                                       <a><span>${id}</span></a>
                                   </li>`);
 
-    setting.classList.toggle('disabled', !dropdown.classList.toggle(id, RESES.config[id]));
+    setting.toggle = (val) => setting.classList.toggle('disabled', !document.body.classList.toggle(id, val));
+    setting.toggle(RESES.config[id]);
 
     setting.addEventListener('click', (ev) => {
       ev.stopPropagation();
-      let value = RESES.config[id] = dropdown.classList.toggle(id);
+      let value = RESES.config[id] = document.body.classList.toggle(id);
       setting.classList.toggle('disabled', !value);
       onChange && onChange.call(setting, value, ev);
     });
@@ -71,6 +76,8 @@ RESES.btnFilterPost = (() => {
     let ul = parent.getElementsByTagName('ul')[0];
     if (!ul) { parent.appendChild(ul = Element.From(`<ul class='resesddl'></ul>`)); }
     ul.appendChild(setting);
+
+    if (typeof filter !== 'string') { filter.setting = setting; }
 
     return setting;
   }
@@ -108,9 +115,17 @@ RESES.btnFilterPost = (() => {
   });
 
   const ddlAutoDownvoting = addToggle(dropdown, 'bAutoDownvoting');
-  addToggle(ddlAutoDownvoting, 'bFilterDownvoting');
-  addToggle(ddlAutoDownvoting, 'bRepostDownvoting');
+  addToggle(ddlAutoDownvoting, 'bDownvoteReposts', true);
+  addToggle(ddlAutoDownvoting, 'bDownvoteFiltered', true);
 
+  const ddlFilters = addToggle(dropdown, 'bFilterPosts', true, (value) => {
+    RESES.LinkListing.filters.forEach(filter => {
+      filter.setting.toggle(value);
+    });
+  });
+  RESES.LinkListing.filters.forEach(filter => {
+    addToggle(ddlFilters, filter, true);
+  });
 
   RESES.onReady(function tabMenuReady() {
 		if (!RESES.bIsCommentPage && !RESES.bIsUserPage) {

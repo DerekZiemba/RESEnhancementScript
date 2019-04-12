@@ -88,7 +88,6 @@ const RESES = window.RESES = {
   subreddit: ((m) => m && m[1] ? m[1].toLocaleLowerCase() : null)(/^\/(?:r\/(\w+)\/)/.exec(window.location.pathname)),
   config: (function localSettings() {
     const cache = {};
-
     function getSetting(key, _default) {
       if (cache[key] !== undefined) { return cache[key]; }
       var setting = JSON.parse(localStorage.getItem('reses-' + key) || _default.toString());
@@ -103,16 +102,18 @@ const RESES = window.RESES = {
       }
       localStorage.setItem('reses-' + key, JSON.stringify(value));
     }
-    return {
+
+    const config = {
       getSetting,
       setSetting,
-      get bAutoDownvoting() { return getSetting('autoDownvoting', false); },
-      set bAutoDownvoting(value) { setSetting('autoDownvoting', value); },
-      get bFilterDownvoting() { return getSetting('filterDownvoting', true); },
-      set bFilterDownvoting(value) { setSetting('filterDownvoting', value); },
-      get bRepostDownvoting() { return getSetting('repostDownvoting', false); },
-      set bRepostDownvoting(value) { setSetting('repostDownvoting', value); },
+      defineSetting: function defineSetting(key, _default) {
+        Object.defineProperty(config, key, {
+          get: function () { return getSetting(key, _default); },
+          set: function (val) { setSetting(key, val); }
+        });
+      }
     };
+    return config;
   })()
 };
 
@@ -122,7 +123,8 @@ if (this.unsafeWindow) { this.unsafeWindow.RESES = RESES; }
 RESES.extendType(String.prototype, {
 	ReplaceAll: function ReplaceAll(sequence, value) {
 		 return this.split(sequence).join(value);
-	},
+  },
+  Capitalize: function () { return this.charAt(0).toUpperCase() + this.slice(1); },
 	Trim: (function () {
 		 const rgxBoth = /^\s+|\s+$/g;
 		 const rgxStart = /^\s+/;
