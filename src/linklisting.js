@@ -7,15 +7,15 @@
 RESES.linkRegistry = (() => {
 	const _links = {};
   var _rgxGetHostName = /(\w{1,})(?=(?:\.[a-z]{2,4}){0,2}$)/;
+  var _rgxSplitURL = /\/|\?/;
   function splitUrl(url) {
-    var parts = url.split("/");
+    var parts = url.split(_rgxSplitURL);
     try {
       parts[0] = _rgxGetHostName.exec(parts[0])[0];
     } catch (e) {
       console.error(url, parts, e);
       throw e;
     }
-
     return parts;
   }
   function getNode(parts) {
@@ -114,7 +114,7 @@ RESES.linkRegistry = (() => {
 
 })();
 
-RESES.posts = [];
+RESES.posts = new Map();
 RESES.LinkListing = (() => {
   const asyncctx = new RESES.AsyncCtx("LinkListing");
 
@@ -153,10 +153,8 @@ RESES.LinkListing = (() => {
 		}
 	}
 	function _getHostAndPath(url){
-		let end = url.indexOf('?');
-		if (end < 0) { end = url.indexOf('#'); }
+		let end = url.indexOf('#');
 		if (end < 0) { end = url.length; }
-		if (url[end-1] === '/'){ end--; }
 		let start = url.indexOf('www.') + 4;
 		if (start < 4) { start = url.indexOf('//') + 2; }
     if (start < 2) { start = 0; }
@@ -173,8 +171,8 @@ RESES.LinkListing = (() => {
 	const registerLinkListing = RESES.linkRegistry.registerLinkListing;
 	const wm = new WeakMap();
 	class LinkListing {
-		constructor(post) {
-			// RESES.posts.push(this);
+    constructor(post) {
+      RESES.posts.set(post.id, this);
       this.post = post;
       this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
       this.midcol = post.getElementsByClassName('midcol')[0] || null;

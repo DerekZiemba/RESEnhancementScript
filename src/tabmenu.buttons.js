@@ -64,7 +64,6 @@ RESES.btnFilterPost = (() => {
                                   </li>`);
 
     setting.toggle = (val) => setting.classList.toggle('disabled', !document.body.classList.toggle(id, val));
-    setting.toggle(RESES.config[id]);
 
     setting.addEventListener('click', (ev) => {
       ev.stopPropagation();
@@ -79,6 +78,10 @@ RESES.btnFilterPost = (() => {
     ul.appendChild(setting);
 
     if (typeof filter !== 'string') { filter.setting = setting; }
+
+    RESES.onInit(() => {
+      setting.toggle(RESES.config[id]);
+    });
 
     return setting;
   }

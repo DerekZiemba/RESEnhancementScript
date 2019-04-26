@@ -790,8 +790,9 @@ RESES.filterData = {
 RESES.linkRegistry = (() => {
     const _links = {};
     var _rgxGetHostName = /(\w{1,})(?=(?:\.[a-z]{2,4}){0,2}$)/;
+    var _rgxSplitURL = /\/|\?/;
     function splitUrl(url) {
-        var parts = url.split("/");
+        var parts = url.split(_rgxSplitURL);
         try {
             parts[0] = _rgxGetHostName.exec(parts[0])[0];
         }
@@ -900,7 +901,7 @@ RESES.linkRegistry = (() => {
     };
     return LinkRegistry;
 })();
-RESES.posts = [];
+RESES.posts = new Map();
 RESES.LinkListing = (() => {
     const asyncctx = new RESES.AsyncCtx("LinkListing");
     function _updateThumbnail(post) {
@@ -939,15 +940,9 @@ RESES.LinkListing = (() => {
         }
     }
     function _getHostAndPath(url) {
-        let end = url.indexOf('?');
-        if (end < 0) {
-            end = url.indexOf('#');
-        }
+        let end = url.indexOf('#');
         if (end < 0) {
             end = url.length;
-        }
-        if (url[end - 1] === '/') {
-            end--;
         }
         let start = url.indexOf('www.') + 4;
         if (start < 4) {
@@ -973,6 +968,7 @@ RESES.LinkListing = (() => {
     const wm = new WeakMap();
     class LinkListing {
         constructor(post) {
+            RESES.posts.set(post.id, this);
             this.post = post;
             this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
             this.midcol = post.getElementsByClassName('midcol')[0] || null;
@@ -1387,7 +1383,6 @@ RESES.btnFilterPost = (() => {
                                       <a><span>${id}</span></a>
                                   </li>`);
         setting.toggle = (val) => setting.classList.toggle('disabled', !document.body.classList.toggle(id, val));
-        setting.toggle(RESES.config[id]);
         setting.addEventListener('click', (ev) => {
             ev.stopPropagation();
             let value = RESES.config[id] = document.body.classList.toggle(id);
@@ -1403,6 +1398,9 @@ RESES.btnFilterPost = (() => {
         if (typeof filter !== 'string') {
             filter.setting = setting;
         }
+        RESES.onInit(() => {
+            setting.toggle(RESES.config[id]);
+        });
         return setting;
     }
     btn.querySelector('#filtermode').addEventListener('click', () => {
