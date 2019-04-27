@@ -86,7 +86,7 @@ RESES.btnFilterPost = (() => {
     return setting;
   }
 
-	btn.querySelector('#filtermode').addEventListener('click', () => {
+	btn.querySelector('#filtermode').addEventListener('click', function onFilterModeClick() {
 		var cls = document.body.classList;
 		if (cls.contains('goodpost')) {
 			cls.replace('goodpost', 'filteredpost');
@@ -98,24 +98,12 @@ RESES.btnFilterPost = (() => {
 		RESES.debounce(RESES.linkListingMgr.updateLinkListings);
 	});
 
-  btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
-    RESES.doAsync(() => {
-      RESES.linkListingMgr.listingCollection.forEach((post) => {
-        if (post.isFilteredByRES) {
-          RESES.doAsync(() => post.autoDownvotePost());
-        }
-      });
-      RESES.debounce(RESES.linkListingMgr.updateLinkListings);
-    });
+  btn.querySelector('#downvoteFiltered').addEventListener('click', function downvoteFiltered() {
+    RESES.linkListingMgr.processListingsAsChunks(RESES.LinkListing.prototype.autoDownvotePost);
 	});
 
-  btn.querySelector('#removeDownvotes').addEventListener('click', () => {
-    RESES.doAsync(() => {
-      RESES.linkListingMgr.listingCollection.forEach((post) => {
-        RESES.doAsync(() => post.removeAutoDownvote());
-      });
-      RESES.debounce(RESES.linkListingMgr.updateLinkListings);
-    });
+  btn.querySelector('#removeDownvotes').addEventListener('click', function removeDownvotes() {
+    RESES.linkListingMgr.processListingsAsChunks(RESES.LinkListing.prototype.removeAutoDownvote);
   });
 
   const ddlAutoDownvoting = addToggle(dropdown, 'bAutoDownvoting');

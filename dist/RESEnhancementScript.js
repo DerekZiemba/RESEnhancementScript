@@ -21,49 +21,6 @@ Element.From = Element.From || (function () {
     };
 }());
 const RESES = window.RESES = {
-    extendType: (function () {
-        function defineOne(proto, name, prop, options, obj) {
-            if (name in proto) {
-                if (options.override) {
-                    Object.defineProperty(proto, name, prop);
-                }
-                else if (options.merge) {
-                    extendType(proto[name], obj[name], options);
-                }
-            }
-            else {
-                Object.defineProperty(proto, name, prop);
-            }
-        }
-        function defineSeveral(proto, name, prop, options, obj) {
-            for (var i = 0, len = proto.length; i < len; i++) {
-                defineOne(proto[i], name, prop, options, obj);
-            }
-        }
-        function extendType(proto, obj, options) {
-            if (!options) {
-                options = { enumerable: undefined, configurable: undefined, writable: undefined, override: true, merge: false };
-            }
-            var define = proto instanceof Array ? defineSeveral : defineOne;
-            var keys = Object.keys(obj);
-            for (var i = 0, len = keys.length; i < len; i++) {
-                var name = keys[i];
-                var opts = options.hasOwnProperty(name) ? Object.assign({}, options, options[name]) : options;
-                var prop = Object.getOwnPropertyDescriptor(obj, name);
-                if (opts.enumerable != null) {
-                    prop.enumerable = opts.enumerable;
-                }
-                if (opts.configurable != null) {
-                    prop.configurable = opts.configurable;
-                }
-                if (opts.writable != null && 'value' in prop) {
-                    prop.writable = opts.writable;
-                }
-                define(proto, name, prop, opts, obj);
-            }
-        }
-        return extendType;
-    }()),
     getNonStandardWindowProperties: function getNonStandardWindowProperties(win, bAsArray) {
         if (typeof win === 'boolean') {
             bAsArray = win;
@@ -128,156 +85,201 @@ if (this.window) {
 if (this.unsafeWindow) {
     this.unsafeWindow.RESES = RESES;
 }
-RESES.extendType(String.prototype, {
-    ReplaceAll: function ReplaceAll(sequence, value) {
-        return this.split(sequence).join(value);
-    },
-    Capitalize: function () { return this.charAt(0).toUpperCase() + this.slice(1); },
-    Trim: (function () {
-        const rgxBoth = /^\s+|\s+$/g;
-        const rgxStart = /^\s+/;
-        const rgxEnd = /\s+$/;
-        function whitespaceTrim(str, option) {
-            if ((option & 3) === 3) {
-                return str.replace(rgxBoth, '');
-            }
-            if ((option & 1) === 1) {
-                return str.replace(rgxStart, '');
-            }
-            if ((option & 2) === 2) {
-                return str.replace(rgxEnd, '');
-            }
-            return str;
+Object.defineProperties(String.prototype, {
+    ReplaceAll: { enumerable: false, writable: false,
+        value: function ReplaceAll(sequence, value) {
+            return this.split(sequence).join(value);
         }
-        function specialTrim(str, ch, option, maxcount) {
-            var len = ch.length;
-            var left = 0, right = str.length, pos = 0, iter = maxcount;
-            if ((option & 1) === 1) {
-                iter = maxcount;
-                while ((pos = str.indexOf(ch, left)) === left && (iter === -1 || iter > 0)) {
-                    left = pos + len;
-                    iter--;
+    },
+    Capitalize: {
+        enumerable: false, writable: false,
+        value: function Capitalize() { return this.charAt(0).toUpperCase() + this.slice(1); }
+    },
+    Trim: {
+        enumerable: false, writable: false,
+        value: (function () {
+            const rgxBoth = /^\s+|\s+$/g;
+            const rgxStart = /^\s+/;
+            const rgxEnd = /\s+$/;
+            function whitespaceTrim(str, option) {
+                if ((option & 3) === 3) {
+                    return str.replace(rgxBoth, '');
                 }
-            }
-            if ((option & 2) === 2) {
-                iter = maxcount;
-                while ((pos = str.lastIndexOf(ch, right)) === right - len && (iter === -1 || iter > 0)) {
-                    right = pos;
-                    iter--;
+                if ((option & 1) === 1) {
+                    return str.replace(rgxStart, '');
                 }
-            }
-            return left > 0 || right < str.length ? str.substr(left, right - left) : str;
-        }
-        return function trim(chars, option, maxcount) {
-            var max = maxcount | -1;
-            if (option == null) {
-                option = 3;
-            }
-            if (chars || max > 0) {
-                return specialTrim(this, chars ? chars : " ", option, max);
-            }
-            return whitespaceTrim(this, option);
-        };
-    }()),
-    TrimStart: function (ch, maxcount) {
-        return this.Trim(ch, 1, maxcount);
-    },
-    TrimEnd: function (ch, maxcount) {
-        return this.Trim(ch, 2, maxcount);
-    },
-    SubstrBefore: function (sequence, bIncludeSequence) {
-        var idx = this.indexOf(sequence);
-        if (idx >= 0) {
-            if (bIncludeSequence) {
-                idx += sequence.length;
-            }
-            if (idx <= this.length) {
-                return this.substr(0, idx);
-            }
-        }
-        return this;
-    },
-    SubstrAfter: function (sequence, bIncludeSequence) {
-        var idx = this.indexOf(sequence);
-        if (idx >= 0) {
-            if (!bIncludeSequence) {
-                idx += sequence.length;
-            }
-            if (idx <= this.length) {
-                return this.substr(idx);
-            }
-        }
-        return this;
-    },
-    SubstrBeforeLast: function (sequence, bIncludeSequence) {
-        var idx = this.lastIndexOf(sequence);
-        if (idx >= 0) {
-            if (bIncludeSequence) {
-                idx += sequence.length;
-            }
-            if (idx <= this.length) {
-                return this.substr(0, idx);
-            }
-        }
-        return this;
-    },
-    SubstrAfterLast: function (sequence, bIncludeSequence) {
-        var idx = this.lastIndexOf(sequence);
-        if (idx >= 0) {
-            if (!bIncludeSequence) {
-                idx += sequence.length;
-            }
-            if (idx <= this.length) {
-                return this.substr(idx);
-            }
-        }
-        return this;
-    }
-});
-RESES.extendType(Array.prototype, {
-    get last() { return this[this.length - 1]; },
-    set last(value) { this[this.length - 1] = value; }
-}, { enumerable: false });
-RESES.extendType([NodeList.prototype, HTMLCollection.prototype], {
-    Remove: (function () {
-        const matches = Element.prototype.matches;
-        function Remove(selector) {
-            var i = 0, len = 0;
-            if (selector == null) {
-                for (i = 0, len = this.length; i < len; i++) {
-                    this[i].remove();
+                if ((option & 2) === 2) {
+                    return str.replace(rgxEnd, '');
                 }
+                return str;
             }
-            else if (typeof selector === 'string') {
-                for (i = 0, len = this.length; i < len; i++) {
-                    if (matches.call(this[i], selector)) {
-                        this[i].remove();
+            function specialTrim(str, ch, option, maxcount) {
+                var len = ch.length;
+                var left = 0, right = str.length, pos = 0, iter = maxcount;
+                if ((option & 1) === 1) {
+                    iter = maxcount;
+                    while ((pos = str.indexOf(ch, left)) === left && (iter === -1 || iter > 0)) {
+                        left = pos + len;
+                        iter--;
                     }
                 }
-            }
-            else if (selector instanceof Array) {
-                for (i = 0, len = selector.length; i < len; i++) {
-                    Remove.call(this, selector[i]);
-                }
-            }
-        }
-        return Remove;
-    }()),
-    CSS: function (style) {
-        if (style) {
-            var keys = Object.getOwnPropertyNames(style);
-            for (var i = 0, len = this.length; i < len; i++) {
-                for (var k = 0, klen = keys.length; k < klen; k++) {
-                    var key = keys[k], value = style[key];
-                    if (typeof value === 'number') {
-                        value = value + 'px';
+                if ((option & 2) === 2) {
+                    iter = maxcount;
+                    while ((pos = str.lastIndexOf(ch, right)) === right - len && (iter === -1 || iter > 0)) {
+                        right = pos;
+                        iter--;
                     }
-                    this[i].style[key] = value;
+                }
+                return left > 0 || right < str.length ? str.substr(left, right - left) : str;
+            }
+            return function Trim(chars, option, maxcount) {
+                var max = maxcount | -1;
+                if (option == null) {
+                    option = 3;
+                }
+                if (chars || max > 0) {
+                    return specialTrim(this, chars ? chars : " ", option, max);
+                }
+                return whitespaceTrim(this, option);
+            };
+        }())
+    },
+    TrimStart: {
+        enumerable: false, writable: false,
+        value: function TrimStart(ch, maxcount) { return this.Trim(ch, 1, maxcount); }
+    },
+    TrimEnd: {
+        enumerable: false, writable: false,
+        value: function TrimEnd(ch, maxcount) { return this.Trim(ch, 2, maxcount); }
+    },
+    SubstrBefore: {
+        enumerable: false, writable: false,
+        value: function SubstrBefore(sequence, bIncludeSequence) {
+            var idx = this.indexOf(sequence);
+            if (idx >= 0) {
+                if (bIncludeSequence) {
+                    idx += sequence.length;
+                }
+                if (idx <= this.length) {
+                    return this.substr(0, idx);
                 }
             }
+            return this;
+        }
+    },
+    SubstrAfter: {
+        enumerable: false, writable: false,
+        value: function SubstrAfter(sequence, bIncludeSequence) {
+            var idx = this.indexOf(sequence);
+            if (idx >= 0) {
+                if (!bIncludeSequence) {
+                    idx += sequence.length;
+                }
+                if (idx <= this.length) {
+                    return this.substr(idx);
+                }
+            }
+            return this;
+        }
+    },
+    SubstrBeforeLast: {
+        enumerable: false, writable: false,
+        value: function SubstrBeforeLast(sequence, bIncludeSequence) {
+            var idx = this.lastIndexOf(sequence);
+            if (idx >= 0) {
+                if (bIncludeSequence) {
+                    idx += sequence.length;
+                }
+                if (idx <= this.length) {
+                    return this.substr(0, idx);
+                }
+            }
+            return this;
+        }
+    },
+    SubstrAfterLast: {
+        enumerable: false, writable: false,
+        value: function SubstrAfterLast(sequence, bIncludeSequence) {
+            var idx = this.lastIndexOf(sequence);
+            if (idx >= 0) {
+                if (!bIncludeSequence) {
+                    idx += sequence.length;
+                }
+                if (idx <= this.length) {
+                    return this.substr(idx);
+                }
+            }
+            return this;
         }
     }
 });
+Object.defineProperties(Array.prototype, {
+    last: {
+        enumerable: false, writable: false,
+        get last() { return this[this.length - 1]; },
+        set last(value) { this[this.length - 1] = value; }
+    },
+    Chunk: {
+        enumerable: false, writable: false,
+        value: function Chunk(size) {
+            let arrays = [];
+            for (var i = 0, len = this.length; i < len; i += size) {
+                arrays.push(this.slice(i, i + size));
+            }
+            return arrays;
+        }
+    }
+});
+(function () {
+    const descriptor = {
+        Remove: {
+            enumerable: false, writable: false,
+            value: (function () {
+                const matches = Element.prototype.matches;
+                function Remove(selector) {
+                    var i = 0, len = 0;
+                    if (selector == null) {
+                        for (i = 0, len = this.length; i < len; i++) {
+                            this[i].remove();
+                        }
+                    }
+                    else if (typeof selector === 'string') {
+                        for (i = 0, len = this.length; i < len; i++) {
+                            if (matches.call(this[i], selector)) {
+                                this[i].remove();
+                            }
+                        }
+                    }
+                    else if (selector instanceof Array) {
+                        for (i = 0, len = selector.length; i < len; i++) {
+                            Remove.call(this, selector[i]);
+                        }
+                    }
+                }
+                return Remove;
+            }())
+        },
+        CSS: {
+            enumerable: false, writable: false,
+            value: function CSS(style) {
+                if (style) {
+                    var keys = Object.getOwnPropertyNames(style);
+                    for (var i = 0, len = this.length; i < len; i++) {
+                        for (var k = 0, klen = keys.length; k < klen; k++) {
+                            var key = keys[k], value = style[key];
+                            if (typeof value === 'number') {
+                                value = value + 'px';
+                            }
+                            this[i].style[key] = value;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    Object.defineProperties(NodeList.prototype, descriptor);
+    Object.defineProperties(HTMLCollection.prototype, descriptor);
+}());
 console.time("RESES.initialize");
 console.time("RESES.documentReady");
 console.time("RESES.windowLoaded");
@@ -966,10 +968,13 @@ RESES.LinkListing = (() => {
     const checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
     const registerLinkListing = RESES.linkRegistry.registerLinkListing;
     const wm = new WeakMap();
+    const all_filters = [];
+    let bodyclasslist = null;
     class LinkListing {
         constructor(post) {
             RESES.posts.set(post.id, this);
             this.post = post;
+            this.cls = post.classList;
             this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
             this.midcol = post.getElementsByClassName('midcol')[0] || null;
             this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
@@ -980,6 +985,7 @@ RESES.LinkListing = (() => {
             this.age = Date.now() - Number(ds.timestamp);
             this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
             this.bPending = false;
+            this.arrPendingOps = [];
             this.updateThumbnail = () => _updateThumbnail(this);
             this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
             this.cls.add('registered');
@@ -1019,7 +1025,7 @@ RESES.LinkListing = (() => {
                 let text = label.title.toLowerCase();
                 this.isAnnoyingflair = filterData.annoyingflair.includes(text);
                 if (!this.isAnnoyingflair && !this.isAnnoyingsub) {
-                    asyncctx.doAsync(() => _adjustFlairColor(label));
+                    this.arrPendingOps.push(() => _adjustFlairColor(label));
                 }
             }
             if (this.shouldBeDownvoted) {
@@ -1030,7 +1036,6 @@ RESES.LinkListing = (() => {
             }
             this.updateThumbnail();
         }
-        get cls() { return this.post.classList; }
         get ageHours() { return this.age / 3600000; }
         get ageDays() { return this.age / 86400000; }
         get isUpvoted() { return Boolean(this.hasClass("likes") ^ this.bPending); }
@@ -1044,7 +1049,7 @@ RESES.LinkListing = (() => {
         get isNSFW() { return this.cls.contains('over18'); }
         get isFilteredByRES() { return this.cls.contains('RESFiltered'); }
         get bMatchesFilter() {
-            let filters = LinkListing.filters;
+            let filters = all_filters;
             for (var len = filters.length, i = 0; i < len; i++) {
                 var filter = filters[i];
                 if (this[filter.use]) {
@@ -1070,7 +1075,7 @@ RESES.LinkListing = (() => {
         hasClass(classes) {
             for (let i = 0, len = arguments.length; i < len; i++) {
                 let cls = arguments[i];
-                if (this.post.classList.contains(cls) || this.midcol && this.midcol.classList.contains(cls)) {
+                if (this.cls.contains(cls) || this.midcol && this.midcol.classList.contains(cls)) {
                     return true;
                 }
             }
@@ -1079,7 +1084,7 @@ RESES.LinkListing = (() => {
         clickDownvoteArrow() {
             if (this.midcol !== null) {
                 this.bPending = true;
-                asyncctx.doAsync(() => this.voteArrowDown.click());
+                this.arrPendingOps.push(() => this.voteArrowDown.click());
             }
         }
         autoDownvotePost() {
@@ -1104,8 +1109,20 @@ RESES.LinkListing = (() => {
             }
         }
     }
-    LinkListing.filters = [];
-    LinkListing.defineFilter = function defineFilter(key) {
+    function generateCSS_GetterSetter(cssIs) {
+        return {
+            configurable: false, enumerable: false,
+            get: function () { return this.cls.contains(cssIs); },
+            set: function (bool) { this.cls.toggle(cssIs, bool); }
+        };
+    }
+    function generateCSS_BodyGetter(cssFilter, cssIs) {
+        return {
+            configurable: false, enumerable: false,
+            get: function () { return bodyclasslist.contains(cssFilter) && this.cls.contains(cssIs); }
+        };
+    }
+    function defineFilter(key) {
         let filter = {
             key: key,
             cssFilter: "filter_" + key,
@@ -1113,23 +1130,26 @@ RESES.LinkListing = (() => {
             jsIs: "is" + key.Capitalize(),
             use: "b" + key.Capitalize()
         };
-        LinkListing.filters.push(filter);
-        Object.defineProperty(LinkListing.prototype, filter.jsIs, {
-            get: function () { return this.cls.contains(filter.cssIs); },
-            set: function (bool) { this.cls.toggle(filter.cssIs, bool); }
+        Object.defineProperties(LinkListing.prototype, {
+            [filter.jsIs]: generateCSS_GetterSetter(filter.cssIs),
+            [filter.use]: generateCSS_BodyGetter(filter.cssFilter, filter.cssIs),
         });
-        Object.defineProperty(LinkListing.prototype, filter.use, {
-            get: function () { return document.body.classList.contains(filter.cssFilter) && this[filter.jsIs]; }
-        });
-    };
-    LinkListing.defineFilter("repost");
-    LinkListing.defineFilter("blockedURL");
-    Object.keys(RESES.filterData).forEach(LinkListing.defineFilter);
+        all_filters.push(filter);
+    }
+    ;
+    defineFilter("repost");
+    defineFilter("blockedURL");
+    Object.keys(RESES.filterData).forEach(defineFilter);
+    Object.defineProperties(LinkListing, {
+        filters: { configurable: false, enumerable: false, writable: false, value: all_filters },
+        defineFilter: { configurable: false, enumerable: false, writable: false, value: defineFilter }
+    });
     RESES.onReady(function generateCSSRules() {
+        bodyclasslist = document.body.classList;
         document.head.parentElement.classList.add('reses');
         document.head.parentElement.classList.add('res-filters-disabled');
         let arr = [];
-        LinkListing.filters.forEach(filter => {
+        all_filters.forEach(filter => {
             arr.push(`html.res.reses body #siteTable .thing.registered.${filter.cssIs} { display: block !important; }`);
             arr.push(`html.res.reses body.${filter.cssFilter} #siteTable .thing.registered.${filter.cssIs} { display: none !important; }`);
         });
@@ -1143,14 +1163,15 @@ RESES.LinkListing = (() => {
 RESES.linkListingMgr = (() => {
     const LinkListing = RESES.LinkListing;
     const _newLinkListings = [];
-    const _listingCollection = Array(1000);
-    _listingCollection.index = 0;
+    const _listingCollection = Array(2000);
+    var idx_end = 0;
     var linklistingObserver = null;
     var block_updateLinkListings = false;
     function _updateLinkListings() {
         if (!block_updateLinkListings) {
+            processListingsAsChunks();
             var good = 0, filtered = 0, shit = 0;
-            for (var i = 0, len = _listingCollection.index, posts = _listingCollection; i < len; i++) {
+            for (var i = 0, len = idx_end, posts = _listingCollection; i < len; i++) {
                 var post = posts[i];
                 if (post.isDownvoted) {
                     shit++;
@@ -1174,7 +1195,7 @@ RESES.linkListingMgr = (() => {
             for (var i = 0, len = children.length; i < len; i++) {
                 var listing = children[i];
                 if (listing.classList.contains('link')) {
-                    _listingCollection[_listingCollection.index++] = new LinkListing(listing);
+                    _listingCollection[idx_end++] = new LinkListing(listing);
                 }
             }
             linklisting = _newLinkListings.pop();
@@ -1212,8 +1233,36 @@ RESES.linkListingMgr = (() => {
         }
     }
     RESES.onLoaded(linkListingReady, 0);
+    function processChunk(from, to, what) {
+        let collection = _listingCollection;
+        while (from < to) {
+            var post = collection[from];
+            while (post.arrPendingOps.length) {
+                var op = post.arrPendingOps.shift();
+                try {
+                    op();
+                }
+                catch (ex) {
+                    debugger;
+                    console.error(ex, op);
+                }
+            }
+            what && what.call(collection[from]);
+            ++from;
+        }
+    }
+    function processListingsChunk(from, to, what) {
+        window.requestAnimationFrame(() => processChunk(from, to, what));
+    }
+    function processListingsAsChunks(what) {
+        for (var i = 0, len = idx_end; i < len; i += 20) {
+            processListingsChunk(i, Math.min(i + 20, len), what);
+        }
+        window.requestAnimationFrame(() => RESES.debounce(RESES.linkListingMgr.updateLinkListings));
+    }
     return {
-        get listingCollection() { return _listingCollection; },
+        listings: _listingCollection,
+        processListingsAsChunks,
         updateLinkListings: _updateLinkListings
     };
 })();
@@ -1403,7 +1452,7 @@ RESES.btnFilterPost = (() => {
         });
         return setting;
     }
-    btn.querySelector('#filtermode').addEventListener('click', () => {
+    btn.querySelector('#filtermode').addEventListener('click', function onFilterModeClick() {
         var cls = document.body.classList;
         if (cls.contains('goodpost')) {
             cls.replace('goodpost', 'filteredpost');
@@ -1416,23 +1465,11 @@ RESES.btnFilterPost = (() => {
         }
         RESES.debounce(RESES.linkListingMgr.updateLinkListings);
     });
-    btn.querySelector('#downvoteFiltered').addEventListener('click', () => {
-        RESES.doAsync(() => {
-            RESES.linkListingMgr.listingCollection.forEach((post) => {
-                if (post.isFilteredByRES) {
-                    RESES.doAsync(() => post.autoDownvotePost());
-                }
-            });
-            RESES.debounce(RESES.linkListingMgr.updateLinkListings);
-        });
+    btn.querySelector('#downvoteFiltered').addEventListener('click', function downvoteFiltered() {
+        RESES.linkListingMgr.processListingsAsChunks(RESES.LinkListing.prototype.autoDownvotePost);
     });
-    btn.querySelector('#removeDownvotes').addEventListener('click', () => {
-        RESES.doAsync(() => {
-            RESES.linkListingMgr.listingCollection.forEach((post) => {
-                RESES.doAsync(() => post.removeAutoDownvote());
-            });
-            RESES.debounce(RESES.linkListingMgr.updateLinkListings);
-        });
+    btn.querySelector('#removeDownvotes').addEventListener('click', function removeDownvotes() {
+        RESES.linkListingMgr.processListingsAsChunks(RESES.LinkListing.prototype.removeAutoDownvote);
     });
     const ddlAutoDownvoting = addToggle(dropdown, 'bAutoDownvoting');
     addToggle(ddlAutoDownvoting, 'bDownvoteReposts', true);

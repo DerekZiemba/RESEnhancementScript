@@ -169,11 +169,15 @@ RESES.LinkListing = (() => {
 	const filterData = RESES.filterData;
 	const checkIfBlockedUrl = RESES.linkRegistry.checkIfBlockedUrl;
 	const registerLinkListing = RESES.linkRegistry.registerLinkListing;
-	const wm = new WeakMap();
+  const wm = new WeakMap();
+  const all_filters = [];
+  let bodyclasslist = null;
+
 	class LinkListing {
     constructor(post) {
       RESES.posts.set(post.id, this);
       this.post = post;
+      this.cls = post.classList;
       this.thumbnail = post.getElementsByClassName('thumbnail')[0] || null;
       this.midcol = post.getElementsByClassName('midcol')[0] || null;
       this.expandobox = post.getElementsByClassName('res-expando-box')[0] || post.getElementsByClassName('expando')[0] || null;
@@ -186,6 +190,7 @@ RESES.LinkListing = (() => {
 
       this.bIsTextPost = this.thumbnail !== null && (this.cls.contains('self') || this.cls.contains('default')) || this.expandobox === null;
       this.bPending = false;
+      this.arrPendingOps = [];
 
       this.updateThumbnail = () => _updateThumbnail(this);
       this.handleVoteClick = (ev) => _handleVoteClick(this, ev);
@@ -232,7 +237,7 @@ RESES.LinkListing = (() => {
         if (!this.isAnnoyingflair && !this.isAnnoyingsub) {
           //Due to the getComputedStyle call, this has substantial overhead if not done in animation frame, slowing down the initLinkListings method
           // For 100 posts, overhead is decreased from 60ms to 8ms.
-          asyncctx.doAsync(() => _adjustFlairColor(label));
+          this.arrPendingOps.push(() => _adjustFlairColor(label));
         }
       }
 
@@ -245,7 +250,6 @@ RESES.LinkListing = (() => {
       }
 			this.updateThumbnail();
 		}
-		get cls() { return this.post.classList; }
 		get ageHours() { return this.age / 3600000; }
 		get ageDays() { return this.age / 86400000; }
     get isUpvoted() { return Boolean(this.hasClass("likes") ^ this.bPending); }
@@ -259,7 +263,7 @@ RESES.LinkListing = (() => {
 		get isNSFW() { return this.cls.contains('over18'); }
 		get isFilteredByRES() { return this.cls.contains('RESFiltered'); }
     get bMatchesFilter() {
-      let filters = LinkListing.filters;
+      let filters = all_filters;
       for (var len = filters.length, i = 0; i < len; i++) {
         var filter = filters[i];
         if (this[filter.use]) { return true; }
@@ -279,18 +283,18 @@ RESES.LinkListing = (() => {
 				}
 			}
 			return item;
-		}
+    }
     hasClass(classes) {
       for (let i = 0, len = arguments.length; i < len; i++) {
         let cls = arguments[i];
-        if (this.post.classList.contains(cls) || this.midcol && this.midcol.classList.contains(cls)) { return true; }
+        if (this.cls.contains(cls) || this.midcol && this.midcol.classList.contains(cls)) { return true; }
       }
       return false;
     }
     clickDownvoteArrow() {
       if (this.midcol !== null) {
         this.bPending = true;
-        asyncctx.doAsync(()=> this.voteArrowDown.click());
+        this.arrPendingOps.push(()=> this.voteArrowDown.click());
       }
     }
 		autoDownvotePost() {
@@ -314,8 +318,20 @@ RESES.LinkListing = (() => {
 		}
   }
 
-  LinkListing.filters = [];
-  LinkListing.defineFilter = function defineFilter(key) {
+  function generateCSS_GetterSetter(cssIs) {
+    return {
+      configurable: false, enumerable: false,
+      get: function () { return this.cls.contains(cssIs); },
+      set: function (bool) { this.cls.toggle(cssIs, bool); }
+    };
+  }
+  function generateCSS_BodyGetter(cssFilter, cssIs) {
+    return {
+      configurable: false, enumerable: false,
+      get: function () { return bodyclasslist.contains(cssFilter) && this.cls.contains(cssIs); }
+    }
+  }
+  function defineFilter(key) {
     let filter = {
       key: key,
       cssFilter: "filter_" + key,
@@ -323,27 +339,29 @@ RESES.LinkListing = (() => {
       jsIs: "is" + key.Capitalize(),
       use: "b" + key.Capitalize()
     };
-    LinkListing.filters.push(filter);
-    Object.defineProperty(LinkListing.prototype, filter.jsIs, {
-      get: function () { return this.cls.contains(filter.cssIs); },
-      set: function (bool) { this.cls.toggle(filter.cssIs, bool); }
+    Object.defineProperties(LinkListing.prototype, {
+      [filter.jsIs]: generateCSS_GetterSetter(filter.cssIs),
+      [filter.use]: generateCSS_BodyGetter(filter.cssFilter, filter.cssIs),
     });
-
-    Object.defineProperty(LinkListing.prototype, filter.use, {
-      get: function () { return document.body.classList.contains(filter.cssFilter) && this[filter.jsIs]; }
-    });
+    all_filters.push(filter);
   };
 
-  LinkListing.defineFilter("repost");
-  LinkListing.defineFilter("blockedURL");
+  defineFilter("repost");
+  defineFilter("blockedURL");
+  Object.keys(RESES.filterData).forEach(defineFilter);
 
-  Object.keys(RESES.filterData).forEach(LinkListing.defineFilter);
+  Object.defineProperties(LinkListing, {
+    filters: { configurable: false, enumerable: false, writable: false, value: all_filters },
+    defineFilter: { configurable: false, enumerable: false, writable: false, value: defineFilter }
+  });
+
 
   RESES.onReady(function generateCSSRules() {
+    bodyclasslist = document.body.classList;
     document.head.parentElement.classList.add('reses');
     document.head.parentElement.classList.add('res-filters-disabled');
     let arr = [];
-    LinkListing.filters.forEach(filter => {
+    all_filters.forEach(filter => {
       arr.push(`html.res.reses body #siteTable .thing.registered.${filter.cssIs} { display: block !important; }`);
       arr.push(`html.res.reses body.${filter.cssFilter} #siteTable .thing.registered.${filter.cssIs} { display: none !important; }`);
     });
@@ -360,14 +378,16 @@ RESES.LinkListing = (() => {
 RESES.linkListingMgr = (() => {
 	const LinkListing = RESES.LinkListing;
 	const _newLinkListings = [];
-	const _listingCollection = Array(1000); _listingCollection.index = 0;
+  const _listingCollection = Array(2000);
+  var idx_end = 0;
   var linklistingObserver = null;
   var block_updateLinkListings = false;
 
   function _updateLinkListings() {
     if (!block_updateLinkListings) {
+      processListingsAsChunks();
       var good = 0, filtered = 0, shit = 0;
-      for (var i = 0, len = _listingCollection.index, posts = _listingCollection; i < len; i++) {
+      for (var i = 0, len = idx_end, posts = _listingCollection; i < len; i++) {
         var post = posts[i];
         if (post.isDownvoted) {
           shit++;
@@ -390,7 +410,7 @@ RESES.linkListingMgr = (() => {
 			for (var i = 0, len = children.length; i < len; i++) {
 				var listing = children[i];
 				if (listing.classList.contains('link')) {
-          _listingCollection[_listingCollection.index++] = new LinkListing(listing);
+          _listingCollection[idx_end++] = new LinkListing(listing);
 				}
 			}
 			linklisting = _newLinkListings.pop();
@@ -432,8 +452,36 @@ RESES.linkListingMgr = (() => {
 
 	RESES.onLoaded(linkListingReady, 0);
 
-	return {
-		get listingCollection() { return _listingCollection; },
+  function processChunk(from, to, what) {
+    let collection = _listingCollection;
+    while (from < to) {
+      var post = collection[from];
+      while (post.arrPendingOps.length) {
+        var op = post.arrPendingOps.shift();
+        try {
+          op();
+        } catch (ex) {
+          debugger;
+          console.error(ex, op);
+        }
+      }
+      what && what.call(collection[from]);
+      ++from;
+    }
+  }
+  function processListingsChunk(from, to, what) {
+    window.requestAnimationFrame(() => processChunk(from, to, what));
+  }
+  function processListingsAsChunks(what) {
+    for (var i = 0, len = idx_end; i < len; i += 20) {
+      processListingsChunk(i, Math.min(i + 20, len), what);
+    }
+    window.requestAnimationFrame(() => RESES.debounce(RESES.linkListingMgr.updateLinkListings));
+  }
+
+  return {
+    listings: _listingCollection,
+    processListingsAsChunks,
 		updateLinkListings: _updateLinkListings
 	};
 
